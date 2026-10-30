@@ -3,10 +3,10 @@
  * Devuelven `undefined` si el dato todavía es un placeholder (`[WHATSAPP]`, `[CORREO]`),
  * para que el componente muestre el texto sin link en vez de un link roto.
  */
+import { buildWaLink } from './whatsapp';
 
 export function whatsappUrl(numero: string): string | undefined {
-  const digitos = numero.replace(/\D/g, '');
-  return digitos.length >= 8 ? `https://wa.me/${digitos}` : undefined;
+  return buildWaLink(numero);
 }
 
 export function mailtoUrl(correo: string): string | undefined {

@@ -4,6 +4,7 @@
  * y el CMS usará los mismos schemas para sus editores.
  */
 import { z } from 'zod';
+import { LIMITES } from './limites';
 
 // Mensajes de validación en español.
 z.config(z.locales.es());
@@ -11,6 +12,7 @@ z.config(z.locales.es());
 // ── Piezas reutilizables ─────────────────────────────────────────────
 
 const texto = z.string().trim().min(1);
+const opcion = texto.max(LIMITES.opcion);
 
 export const iconNames = [
   'web',
@@ -145,7 +147,10 @@ export const productoSchema = z.object({
     placeholder: z.string(),
     boton: texto,
     enviando: texto,
+    /** Correo con formato inválido. */
     error: texto,
+    /** No se pudo guardar en Firestore. */
+    errorEnvio: texto,
     exitoTitulo: texto,
     exitoTexto: texto,
   }),
@@ -163,10 +168,11 @@ export const cotizadorSchema = z.object({
       }),
     )
     .length(5),
-  tipos: z.array(z.object({ label: texto, hint: texto })).min(1),
-  funciones: z.array(texto).min(1),
-  plazos: z.array(texto).min(1),
-  presupuestos: z.array(texto).min(1),
+  // Las opciones elegidas se guardan en Firestore: respetan los límites de firestore.rules.
+  tipos: z.array(z.object({ label: opcion, hint: texto })).min(1),
+  funciones: z.array(opcion).min(1).max(LIMITES.funciones),
+  plazos: z.array(opcion).min(1),
+  presupuestos: z.array(opcion).min(1),
   campos: z.object({
     nombre: campoSchema,
     empresa: campoSchema,
@@ -190,8 +196,25 @@ export const cotizadorSchema = z.object({
     /** Falta correo y WhatsApp: se pide al menos uno. */
     contacto: texto,
     correo: texto,
+    /** No se pudo guardar en Firestore: se ofrece el link de WhatsApp sin ref. */
+    envio: texto,
   }),
-  exito: z.object({ titulo: texto, texto: texto }),
+  exito: z.object({
+    titulo: texto,
+    texto: texto,
+    /** Etiqueta antes del ref, por ejemplo "Tu referencia". */
+    ref: texto,
+    /** Texto del enlace a WhatsApp (en éxito y en error). */
+    whatsapp: texto,
+    /** Se muestra si no hay número de WhatsApp configurado en site.json. */
+    sinWhatsapp: texto,
+  }),
+  /**
+   * Mensaje que se abre en WhatsApp. Marcadores: {ref}, {tipo}, {funciones},
+   * {plazo}, {presupuesto}, {nombre}, {negocio} e {idea}. Una línea por campo:
+   * si el campo está vacío, su línea se omite. *texto* es negrita en WhatsApp.
+   */
+  plantillaWhatsapp: texto,
   resumen: z.object({
     titulo: texto,
     proyecto: texto,

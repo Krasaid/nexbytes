@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { nextTick, ref } from 'vue';
 import { isEmail, submitWaitlist } from '../../lib/forms';
+import { LIMITES } from '../../lib/limites';
 import type { Producto } from '../../lib/schemas';
 
 const props = defineProps<{ textos: Producto['listaEspera'] }>();
@@ -9,7 +10,10 @@ const email = ref('');
 const error = ref(false);
 const sending = ref(false);
 const joined = ref(false);
+/** Firestore falló. */
+const sendError = ref(false);
 const successTitle = ref<HTMLElement | null>(null);
+const trampa = ref<HTMLInputElement | null>(null);
 
 async function onSubmit() {
   if (!isEmail(email.value)) {
@@ -17,15 +21,20 @@ async function onSubmit() {
     return;
   }
   error.value = false;
+  sendError.value = false;
   sending.value = true;
   try {
-    await submitWaitlist(email.value.trim());
-    joined.value = true;
-    await nextTick();
-    successTitle.value?.focus();
+    await submitWaitlist(email.value.trim(), trampa.value?.value ?? '');
+  } catch (e) {
+    console.error(e);
+    sendError.value = true;
+    return;
   } finally {
     sending.value = false;
   }
+  joined.value = true;
+  await nextTick();
+  successTitle.value?.focus();
 }
 </script>
 
@@ -35,6 +44,10 @@ async function onSubmit() {
       <h3>{{ props.textos.titulo }}</h3>
       <p class="texto">{{ props.textos.texto }}</p>
       <form class="form" novalidate @submit.prevent="onSubmit">
+        <!-- Campo trampa: invisible para personas, los bots lo llenan. -->
+        <div class="trampa" aria-hidden="true">
+          <input ref="trampa" type="text" name="sitio_web" tabindex="-1" autocomplete="off" />
+        </div>
         <label for="wait-email">{{ props.textos.label }}</label>
         <input
           id="wait-email"
@@ -42,12 +55,14 @@ async function onSubmit() {
           type="email"
           name="email"
           autocomplete="email"
+          :maxlength="LIMITES.correo"
           :placeholder="props.textos.placeholder"
           :aria-invalid="error ? 'true' : undefined"
           :aria-describedby="error ? 'wait-email-error' : undefined"
           @input="error = false"
         />
         <p v-if="error" id="wait-email-error" class="error" role="alert">{{ props.textos.error }}</p>
+        <p v-if="sendError" class="error" role="alert">{{ props.textos.errorEnvio }}</p>
         <button type="submit" class="submit" :disabled="sending">
           {{ sending ? props.textos.enviando : props.textos.boton }}
         </button>
@@ -72,6 +87,15 @@ async function onSubmit() {
 
 h3 {
   font-size: var(--text-xl);
+}
+
+/* Fuera de pantalla (no display:none: algunos bots ignoran los campos ocultos). */
+.trampa {
+  position: absolute;
+  left: -10000px;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
 }
 
 .exito h3 {

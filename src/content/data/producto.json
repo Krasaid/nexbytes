@@ -16,6 +16,7 @@
     "boton": "Quiero acceso anticipado",
     "enviando": "Enviando…",
     "error": "Escribe un correo válido, por ejemplo tu@negocio.com.",
+    "errorEnvio": "No pudimos registrarte. Intenta de nuevo en un momento.",
     "exitoTitulo": "¡Estás en la lista!",
     "exitoTexto": "Te escribiremos en cuanto el producto esté listo para probarse."
   }

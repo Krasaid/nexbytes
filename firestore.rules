@@ -1,0 +1,96 @@
+rules_version = '2';
+
+// Reglas de la landing de Nexbytes.
+// - El público solo puede CREAR en `cotizaciones` y `lista_espera`, con campos y largos validados.
+// - El admin puede leer y cambiar solo `estado`.
+// - Nadie puede borrar desde el cliente.
+// Los largos máximos son los de src/lib/limites.ts: si cambias uno, cámbialo en ambos lados.
+// Pruebas: npm run test:rules (emulador).
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function isAdmin() {
+      return request.auth != null && request.auth.uid == 'kcUUn8dbtDdrv50iXDHkcupN8t73';
+    }
+
+    function texto(v, min, max) {
+      return v is string && v.size() >= min && v.size() <= max;
+    }
+
+    // Una función del cotizador: string de 1 a 120 caracteres (o posición vacía).
+    function funcionOk(l, i) {
+      return l.size() <= i || texto(l[i], 1, 120);
+    }
+
+    // Las reglas no tienen bucles: se revisa cada posición hasta el máximo (12).
+    function funcionesOk(l) {
+      return l is list && l.size() <= 12
+        && funcionOk(l, 0) && funcionOk(l, 1) && funcionOk(l, 2) && funcionOk(l, 3)
+        && funcionOk(l, 4) && funcionOk(l, 5) && funcionOk(l, 6) && funcionOk(l, 7)
+        && funcionOk(l, 8) && funcionOk(l, 9) && funcionOk(l, 10) && funcionOk(l, 11);
+    }
+
+    // El admin solo puede tocar `estado`, y solo con un valor conocido.
+    function soloCambiaEstado(estados) {
+      return request.resource.data.diff(resource.data).affectedKeys().hasOnly(['estado'])
+        && request.resource.data.estado in estados;
+    }
+
+    match /cotizaciones/{id} {
+      function cotizacionValida(d) {
+        return d.keys().hasOnly([
+            'ref', 'tipo', 'funciones', 'plazo', 'presupuesto',
+            'nombre', 'empresa', 'correo', 'whatsapp', 'descripcion',
+            'estado', 'canal', 'creadoEn'
+          ])
+          && d.keys().hasAll([
+            'ref', 'tipo', 'funciones', 'plazo', 'presupuesto',
+            'nombre', 'empresa', 'correo', 'whatsapp', 'descripcion',
+            'estado', 'canal', 'creadoEn'
+          ])
+          && d.ref is string && d.ref.matches('^NX-[A-Z0-9]{4}$')
+          && texto(d.tipo, 1, 120)
+          && funcionesOk(d.funciones)
+          && texto(d.plazo, 1, 120)
+          && texto(d.presupuesto, 1, 120)
+          && texto(d.nombre, 1, 100)
+          && texto(d.empresa, 0, 120)
+          && texto(d.correo, 0, 254)
+          && texto(d.whatsapp, 0, 30)
+          && (d.correo.size() > 0 || d.whatsapp.size() > 0)
+          && texto(d.descripcion, 0, 2000)
+          && d.estado == 'nuevo'
+          && d.canal == 'whatsapp'
+          && d.creadoEn == request.time;
+      }
+
+      allow create: if cotizacionValida(request.resource.data);
+      allow read: if isAdmin();
+      allow update: if isAdmin()
+        && soloCambiaEstado(['nuevo', 'contactado', 'propuesta', 'ganado', 'perdido']);
+      allow delete: if false;
+    }
+
+    match /lista_espera/{id} {
+      function registroValido(d) {
+        return d.keys().hasOnly(['email', 'estado', 'creadoEn'])
+          && d.keys().hasAll(['email', 'estado', 'creadoEn'])
+          && texto(d.email, 6, 254)
+          && d.email.matches('^[^\\s@]+@[^\\s@]+\\.[^\\s@]{2,}$')
+          && d.estado == 'nuevo'
+          && d.creadoEn == request.time;
+      }
+
+      allow create: if registroValido(request.resource.data);
+      allow read: if isAdmin();
+      allow update: if isAdmin() && soloCambiaEstado(['nuevo', 'invitado', 'baja']);
+      allow delete: if false;
+    }
+
+    // Todo lo demás está cerrado.
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

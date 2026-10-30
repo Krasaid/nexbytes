@@ -1,12 +1,16 @@
 <script setup lang="ts">
 import { computed, nextTick, reactive, ref } from 'vue';
 import { isEmail, submitQuote, type QuoteRequest } from '../../lib/forms';
+import { LIMITES } from '../../lib/limites';
 import type { Cotizador } from '../../lib/schemas';
+import { buildQuoteMessage, buildWaLink, createQuoteRef } from '../../lib/whatsapp';
 
 const props = defineProps<{
   cotizador: Cotizador;
   /** Link de WhatsApp del resumen (wa.me o ancla de contacto). */
   whatsappHref: string;
+  /** site.whatsapp tal cual; buildWaLink lo normaliza. */
+  whatsappNumero: string;
 }>();
 
 const c = props.cotizador;
@@ -23,6 +27,11 @@ const step = ref(0);
 const sending = ref(false);
 const sent = ref(false);
 const stepError = ref(false);
+/** Firestore falló: se ofrece WhatsApp sin ref. */
+const sendError = ref(false);
+const refEnviado = ref('');
+const waLink = ref<string | undefined>();
+const trampa = ref<HTMLInputElement | null>(null);
 
 const form = reactive<QuoteRequest>({
   tipo: '',
@@ -40,6 +49,7 @@ const fieldErrors = reactive({ nombre: false, contacto: false, correo: false });
 
 const stepTitle = ref<HTMLElement | null>(null);
 const successTitle = ref<HTMLElement | null>(null);
+const sendErrorBox = ref<HTMLElement | null>(null);
 
 const paso = computed(() => c.pasos[step.value]);
 const progreso = computed(() =>
@@ -104,23 +114,73 @@ async function onPrimary() {
     return;
   }
 
+  await enviar();
+}
+
+function mensajeDe(data: QuoteRequest, ref: string): string {
+  return buildQuoteMessage(c.plantillaWhatsapp, {
+    ref,
+    tipo: data.tipo,
+    funciones: data.funciones,
+    plazo: data.plazo,
+    presupuesto: data.presupuesto,
+    nombre: data.nombre,
+    negocio: data.empresa,
+    idea: data.descripcion,
+  });
+}
+
+async function enviar() {
+  const data: QuoteRequest = {
+    ...form,
+    funciones: [...form.funciones],
+    nombre: form.nombre.trim(),
+    empresa: form.empresa.trim(),
+    correo: form.correo.trim(),
+    whatsapp: form.whatsapp.trim(),
+    descripcion: form.descripcion.trim(),
+  };
+  const valorTrampa = trampa.value?.value ?? '';
+  const ref = createQuoteRef();
+  const hayNumero = !!buildWaLink(props.whatsappNumero);
+  const movil = window.matchMedia('(hover: none) and (pointer: coarse)').matches;
+
+  // Escritorio: la pestaña se abre ya, dentro del clic. Después del await el
+  // navegador la bloquearía como popup. Si aun así la bloquea, queda el botón.
+  const pestana = hayNumero && !movil && !valorTrampa ? window.open('', '_blank') : null;
+  if (pestana) pestana.opener = null;
+
   sending.value = true;
+  sendError.value = false;
+  let guardado = false;
   try {
-    await submitQuote({
-      ...form,
-      funciones: [...form.funciones],
-      nombre: form.nombre.trim(),
-      empresa: form.empresa.trim(),
-      correo: form.correo.trim(),
-      whatsapp: form.whatsapp.trim(),
-      descripcion: form.descripcion.trim(),
-    });
-    sent.value = true;
-    await nextTick();
-    successTitle.value?.focus();
+    await submitQuote(data, ref, valorTrampa);
+    guardado = true;
+  } catch (error) {
+    console.error(error);
   } finally {
     sending.value = false;
   }
+
+  if (!guardado) {
+    pestana?.close();
+    waLink.value = buildWaLink(props.whatsappNumero, mensajeDe(data, ''));
+    sendError.value = true;
+    await nextTick();
+    sendErrorBox.value?.focus();
+    return;
+  }
+
+  refEnviado.value = ref;
+  waLink.value = buildWaLink(props.whatsappNumero, mensajeDe(data, ref));
+  sent.value = true;
+  await nextTick();
+  successTitle.value?.focus();
+
+  if (!waLink.value || valorTrampa) return;
+  if (pestana) pestana.location.href = waLink.value;
+  // En móvil una navegación después del await no se bloquea: abre la app de WhatsApp.
+  else if (movil) window.location.href = waLink.value;
 }
 
 async function reset() {
@@ -137,6 +197,9 @@ async function reset() {
   });
   Object.assign(fieldErrors, { nombre: false, contacto: false, correo: false });
   sent.value = false;
+  sendError.value = false;
+  refEnviado.value = '';
+  waLink.value = undefined;
   await irA(0);
 }
 
@@ -148,10 +211,10 @@ const resumen = computed(() => [
 ]);
 
 const campos = [
-  { key: 'nombre', id: 'q-nombre', type: 'text', autocomplete: 'name' },
-  { key: 'empresa', id: 'q-empresa', type: 'text', autocomplete: 'organization' },
-  { key: 'correo', id: 'q-correo', type: 'email', autocomplete: 'email' },
-  { key: 'whatsapp', id: 'q-wa', type: 'tel', autocomplete: 'tel' },
+  { key: 'nombre', id: 'q-nombre', type: 'text', autocomplete: 'name', max: LIMITES.nombre },
+  { key: 'empresa', id: 'q-empresa', type: 'text', autocomplete: 'organization', max: LIMITES.empresa },
+  { key: 'correo', id: 'q-correo', type: 'email', autocomplete: 'email', max: LIMITES.correo },
+  { key: 'whatsapp', id: 'q-wa', type: 'tel', autocomplete: 'tel', max: LIMITES.whatsapp },
 ] as const;
 
 function errorDeCampo(key: (typeof campos)[number]['key']): string | null {
@@ -166,6 +229,11 @@ function errorDeCampo(key: (typeof campos)[number]['key']): string | null {
   <div class="cotizador">
     <div class="panel">
       <form v-if="!sent" class="wizard" novalidate @submit.prevent="onPrimary">
+        <!-- Campo trampa: invisible para personas, los bots lo llenan. -->
+        <div class="trampa" aria-hidden="true">
+          <input ref="trampa" type="text" name="sitio_web" tabindex="-1" autocomplete="off" />
+        </div>
+
         <ol role="list" aria-label="Pasos" class="steps">
           <li
             v-for="(p, i) in c.pasos"
@@ -230,6 +298,7 @@ function errorDeCampo(key: (typeof campos)[number]['key']): string | null {
                   :type="campo.type"
                   :name="campo.key"
                   :autocomplete="campo.autocomplete"
+                  :maxlength="campo.max"
                   :placeholder="c.campos[campo.key].placeholder"
                   :aria-invalid="errorDeCampo(campo.key) ? 'true' : undefined"
                   :aria-describedby="errorDeCampo(campo.key) ? `${campo.id}-error` : undefined"
@@ -246,12 +315,20 @@ function errorDeCampo(key: (typeof campos)[number]['key']): string | null {
                 v-model="form.descripcion"
                 name="descripcion"
                 rows="4"
+                :maxlength="LIMITES.descripcion"
                 :placeholder="c.campos.descripcion.placeholder"
               ></textarea>
             </div>
           </div>
 
           <p v-if="stepError" class="error" role="alert">{{ c.errores.elegir }}</p>
+
+          <div v-if="sendError" ref="sendErrorBox" class="send-error" role="alert" tabindex="-1">
+            <p>{{ c.errores.envio }}</p>
+            <a class="btn primary wa" :href="waLink ?? props.whatsappHref" target="_blank" rel="noopener">
+              {{ c.exito.whatsapp }}
+            </a>
+          </div>
         </div>
 
         <div class="actions">
@@ -273,8 +350,17 @@ function errorDeCampo(key: (typeof campos)[number]['key']): string | null {
           <path d="M7 12.5l3.2 3.2L17 9" />
         </svg>
         <h3 ref="successTitle" tabindex="-1">{{ c.exito.titulo }}</h3>
-        <p>{{ c.exito.texto }}</p>
-        <button type="button" class="btn ghost" @click="reset">{{ c.botones.otro }}</button>
+        <p class="ref">
+          {{ c.exito.ref }}: <strong>{{ refEnviado }}</strong>
+        </p>
+        <p v-if="waLink">{{ c.exito.texto }}</p>
+        <p v-else>{{ c.exito.sinWhatsapp }}</p>
+        <div class="exito-actions">
+          <a v-if="waLink" class="btn primary wa" :href="waLink" target="_blank" rel="noopener">
+            {{ c.exito.whatsapp }}
+          </a>
+          <button type="button" class="btn ghost" @click="reset">{{ c.botones.otro }}</button>
+        </div>
       </div>
     </div>
 
@@ -549,6 +635,44 @@ label {
   cursor: progress;
 }
 
+/* Fuera de pantalla (no display:none: algunos bots ignoran los campos ocultos). */
+.trampa {
+  position: absolute;
+  left: -10000px;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+}
+
+.send-error {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--space-3);
+  padding: var(--space-4) 18px;
+  background: var(--gold-tint);
+  border: 1px solid var(--gold);
+  border-radius: var(--radius-md);
+  font-size: var(--text-md);
+  line-height: 1.55;
+}
+
+.send-error:focus {
+  outline: none;
+}
+
+/* Enlace con aspecto de botón primario. */
+.btn.wa {
+  display: inline-flex;
+  align-items: center;
+  margin-left: 0;
+  color: var(--on-gold);
+}
+
+.btn.wa:hover {
+  color: var(--on-gold);
+}
+
 /* ── Éxito ── */
 .exito {
   display: flex;
@@ -573,6 +697,22 @@ label {
   font-size: var(--text-base);
   line-height: 1.6;
   color: var(--muted);
+}
+
+.exito .ref {
+  font-family: var(--font-mono);
+  font-size: var(--text-md);
+}
+
+.exito .ref strong {
+  color: var(--gold);
+  font-weight: 500;
+}
+
+.exito-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-3);
 }
 
 /* ── Resumen ── */

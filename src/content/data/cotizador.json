@@ -63,12 +63,17 @@
     "elegir": "Elige una opción para continuar.",
     "nombre": "Escribe tu nombre.",
     "contacto": "Déjanos un correo o un WhatsApp para responderte.",
-    "correo": "Revisa el correo, parece incompleto."
+    "correo": "Revisa el correo, parece incompleto.",
+    "envio": "No pudimos guardar tu solicitud. Envíanosla por WhatsApp y te respondemos igual."
   },
   "exito": {
     "titulo": "¡Recibimos tu solicitud!",
-    "texto": "Revisaremos los detalles y te enviaremos una propuesta con alcance, tiempos y costo en menos de 48 horas."
+    "texto": "Envíanos el mensaje por WhatsApp para darle seguimiento. Revisaremos los detalles y te enviaremos una propuesta con alcance, tiempos y costo en menos de 48 horas.",
+    "ref": "Tu referencia",
+    "whatsapp": "Enviar por WhatsApp",
+    "sinWhatsapp": "Te contactaremos por el correo o WhatsApp que nos dejaste."
   },
+  "plantillaWhatsapp": "Hola, quiero cotizar un proyecto con Nexbytes.\n\n*Ref:* {ref}\n*Tipo:* {tipo}\n*Funciones:* {funciones}\n*Plazo:* {plazo}\n*Presupuesto:* {presupuesto}\n\n*Nombre:* {nombre}\n*Negocio:* {negocio}\n*Idea:* {idea}",
   "resumen": {
     "titulo": "Tu resumen",
     "proyecto": "Proyecto",

@@ -25,7 +25,12 @@ const whatsappHref = whatsappUrl(site.whatsapp) ?? '#contacto';
       description={header.descripcion}
     />
 
-    <Cotizador client:visible cotizador={cotizador} whatsappHref={whatsappHref} />
+    <Cotizador
+      client:visible
+      cotizador={cotizador}
+      whatsappHref={whatsappHref}
+      whatsappNumero={site.whatsapp}
+    />
   </div>
 </section>
 

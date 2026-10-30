@@ -82,7 +82,11 @@ src/
 
 - `npm run dev`: servidor local
 - `npm run build`: build estático en `dist/`
+- `npm test`: pruebas unitarias (Vitest, `tests/unit`)
+- `npm run test:rules`: pruebas de `firestore.rules` con el emulador (`tests/rules`, necesita Java)
+- `npm run emulators`: emulador de Firestore para probar los formularios en local (con `PUBLIC_FIRESTORE_EMULATOR` en `.env`)
 - `firebase deploy --only hosting`: publicar
+- `firebase deploy --only firestore:rules`: publicar las reglas de Firestore
 - `firebase hosting:channel:deploy preview`: vista previa
 
 ## Variables de entorno (`.env`, nunca se sube)
@@ -94,4 +98,5 @@ PUBLIC_FIREBASE_AUTH_DOMAIN=
 PUBLIC_FIREBASE_PROJECT_ID=
 PUBLIC_FIREBASE_APP_ID=
 PUBLIC_RECAPTCHA_SITE_KEY=
+# Opcional, solo desarrollo: PUBLIC_FIRESTORE_EMULATOR=127.0.0.1:8080
 ```

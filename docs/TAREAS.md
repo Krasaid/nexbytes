@@ -110,13 +110,13 @@ Todas viven en `src/components/sections/`, reciben sus datos de `content.ts` des
 - Con `prefers-reduced-motion`, nada se anima. Sin JS todo es visible.
 - Nada de animaciones que muevan el layout (CLS = 0).
 
-### [ ] T11. Conectar formularios a Firestore
+### [x] T11. Conectar formularios a Firestore
 - `src/lib/firebase.ts`: init perezoso (solo se carga cuando se usa un formulario), con App Check usando reCAPTCHA.
 - `src/lib/forms.ts`: implementar `submitQuote` → colección `cotizaciones` y `submitWaitlist` → colección `lista_espera`, con `estado: 'nuevo'` y `creadoEn: serverTimestamp()`.
 - `firestore.rules`: el público solo puede **crear** en esas colecciones, con validación de campos, tipos y longitudes; nadie puede leer, editar ni borrar desde el cliente (el CMS usará un admin autenticado, se define en la fase CMS).
 - Campo trampa (honeypot) oculto en ambos formularios.
 - Manejo de error visible en la UI ("No pudimos enviar, escríbenos por WhatsApp" con link).
-- Opcional, requiere el plan Blaze: Cloud Function `onDocumentCreated('cotizaciones/{id}')` que avise por correo o Telegram.
+- (No se hizo: sin Cloud Functions; el aviso llega por WhatsApp.) Opcional, requiere el plan Blaze: Cloud Function `onDocumentCreated('cotizaciones/{id}')` que avise por correo o Telegram.
 
 ### [ ] T12. SEO, rendimiento y accesibilidad
 - Meta y Open Graph desde `site.seo`, `@astrojs/sitemap`, `robots.txt`, favicon con el logo, página 404 con el mismo estilo.
