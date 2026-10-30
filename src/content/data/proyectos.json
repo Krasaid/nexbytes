@@ -1,0 +1,50 @@
+{
+  "header": {
+    "eyebrow": "02 — Proyectos",
+    "titulo": "Trabajo real, en producción",
+    "descripcion": "Cada proyecto empieza con un problema concreto. Estos son algunos que hemos resuelto."
+  },
+  "textos": {
+    "sinImagen": "Captura",
+    "verSitio": "Ver sitio →"
+  },
+  "items": [
+    {
+      "slug": "wp-producciones",
+      "titulo": "WP Producciones",
+      "etiqueta": "Sitio web",
+      "resumen": "Sitio para una productora de eventos en El Salvador: escenarios, sonido, iluminación y talento, presentados para captar nuevos clientes.",
+      "stack": [],
+      "url": "https://wp-producciones.web.app",
+      "orden": 1,
+      "visible": true
+    },
+    {
+      "slug": "wp-facturacion",
+      "titulo": "WP Facturación",
+      "etiqueta": "App Android · POS",
+      "resumen": "Punto de venta móvil para rutas de venta: inventario por carrito, cortes diarios, comisiones por vendedor e impresión de tickets por Bluetooth.",
+      "stack": ["Java", "Firebase", "ESC/POS"],
+      "orden": 2,
+      "visible": true
+    },
+    {
+      "slug": "startup",
+      "titulo": "StartUP!",
+      "etiqueta": "Plataforma web",
+      "resumen": "Marketplace para descubrir emprendedores locales de El Salvador, con backend propio, caché y despliegue en la nube.",
+      "stack": ["Spring Boot", "MongoDB", "Vue 3"],
+      "orden": 3,
+      "visible": true
+    },
+    {
+      "slug": "pets",
+      "titulo": "Pets!",
+      "etiqueta": "App Android",
+      "resumen": "App de adopción de mascotas con cuentas seguras y seguimiento de cada solicitud de adopción de principio a fin.",
+      "stack": ["Android", "Spring Boot", "JWT"],
+      "orden": 4,
+      "visible": true
+    }
+  ]
+}

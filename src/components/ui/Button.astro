@@ -1,0 +1,90 @@
+---
+import type { HTMLAttributes } from 'astro/types';
+
+type Props = {
+  variant?: 'primary' | 'ghost';
+  /** sm: menú (44 px) · md: formularios (48 px) · lg: hero (52 px) */
+  size?: 'sm' | 'md' | 'lg';
+  href?: string;
+  type?: 'button' | 'submit' | 'reset';
+  class?: string;
+} & Omit<HTMLAttributes<'a'> & HTMLAttributes<'button'>, 'type' | 'href' | 'class'>;
+
+const { variant = 'primary', size = 'md', href, type = 'button', class: className, ...rest } = Astro.props;
+const classes = ['btn', `btn-${variant}`, `btn-${size}`, className];
+---
+
+{
+  href ? (
+    <a href={href} class:list={classes} {...rest}>
+      <slot />
+    </a>
+  ) : (
+    <button type={type} class:list={classes} {...rest}>
+      <slot />
+    </button>
+  )
+}
+
+<style>
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--space-2);
+    border-radius: var(--radius-md);
+    font-size: var(--text-base);
+    line-height: 1.2;
+    cursor: pointer;
+    transition:
+      background-color var(--transition-fast),
+      border-color var(--transition-fast),
+      color var(--transition-fast);
+  }
+
+  .btn-sm {
+    min-height: var(--tap-min);
+    padding: 12px 20px;
+    border-radius: var(--radius-sm);
+    font-size: var(--text-md);
+  }
+
+  .btn-md {
+    min-height: 48px;
+    padding: 14px 26px;
+  }
+
+  .btn-lg {
+    min-height: 52px;
+    padding: 16px 26px;
+  }
+
+  .btn-primary {
+    background: var(--gold);
+    color: var(--on-gold);
+    border: 0;
+    font-weight: 600;
+  }
+
+  .btn-primary:hover {
+    background: var(--gold-light);
+    color: var(--on-gold);
+  }
+
+  .btn-ghost {
+    background: transparent;
+    color: var(--text);
+    border: 1px solid var(--line-strong);
+    font-weight: 500;
+  }
+
+  .btn-ghost:hover {
+    border-color: var(--gold);
+    color: var(--text);
+  }
+
+  .btn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
+</style>

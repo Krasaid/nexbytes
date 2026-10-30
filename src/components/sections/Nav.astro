@@ -1,0 +1,196 @@
+---
+import type { Site } from '../../lib/schemas';
+import Logo from '../ui/Logo.astro';
+import Icon from '../ui/Icon.astro';
+import Button from '../ui/Button.astro';
+
+interface Props {
+  site: Site;
+}
+
+const { site } = Astro.props;
+---
+
+<header class="nav">
+  <div class="container bar">
+    <a href="#inicio" class="brand">
+      <Logo size={36} />
+      <span>{site.nombre}</span>
+    </a>
+
+    <nav aria-label="Principal" class="desktop">
+      <ul role="list">
+        {site.nav.map((link) => <li><a href={link.href}>{link.label}</a></li>)}
+      </ul>
+      <Button href={site.ctaMenu.href} size="sm">{site.ctaMenu.label}</Button>
+    </nav>
+
+    <details class="mobile" data-nav-menu>
+      <summary aria-label="Menú">
+        <Icon name="menu" class="icon-open" />
+        <Icon name="close" class="icon-close" />
+      </summary>
+      <nav aria-label="Principal" class="panel">
+        <ul role="list">
+          {site.nav.map((link) => <li><a href={link.href}>{link.label}</a></li>)}
+        </ul>
+        <Button href={site.ctaMenu.href} class="panel-cta">{site.ctaMenu.label}</Button>
+      </nav>
+    </details>
+  </div>
+</header>
+
+<script>
+  // Mejora progresiva del <details>: sin JS el menú igual abre y cierra.
+  document.querySelectorAll<HTMLDetailsElement>('[data-nav-menu]').forEach((menu) => {
+    const summary = menu.querySelector('summary');
+
+    menu.querySelectorAll('a').forEach((link) => {
+      link.addEventListener('click', () => {
+        menu.open = false;
+      });
+    });
+
+    menu.addEventListener('keydown', (event) => {
+      if (event.key === 'Escape' && menu.open) {
+        menu.open = false;
+        summary?.focus();
+      }
+    });
+
+    document.addEventListener('click', (event) => {
+      if (menu.open && !menu.contains(event.target as Node)) menu.open = false;
+    });
+  });
+</script>
+
+<style>
+  .nav {
+    position: sticky;
+    top: 0;
+    z-index: 50;
+    border-bottom: 1px solid var(--line);
+    background: color-mix(in srgb, var(--bg) 85%, transparent);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+  }
+
+  .bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-4);
+    min-height: var(--nav-height);
+  }
+
+  .brand {
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+    min-height: var(--tap-min);
+    color: var(--text);
+    font-size: var(--text-xl);
+    font-weight: 700;
+    letter-spacing: var(--tracking-brand);
+    text-transform: uppercase;
+  }
+
+  .brand:hover {
+    color: var(--text);
+  }
+
+  ul {
+    margin: 0;
+  }
+
+  a:not(.brand, .btn) {
+    display: inline-flex;
+    align-items: center;
+    min-height: var(--tap-min);
+    color: var(--text-soft);
+  }
+
+  a:not(.brand, .btn):hover {
+    color: var(--gold-light);
+  }
+
+  /* ── Escritorio ── */
+  .desktop {
+    display: flex;
+    align-items: center;
+    gap: var(--space-7);
+    font-size: var(--text-md);
+  }
+
+  .desktop ul {
+    display: flex;
+    gap: var(--space-7);
+  }
+
+  .mobile {
+    display: none;
+  }
+
+  /* ── Móvil ── */
+  @media (max-width: 767px) {
+    .desktop {
+      display: none;
+    }
+
+    .mobile {
+      display: block;
+    }
+
+    summary {
+      display: grid;
+      place-items: center;
+      width: var(--tap-min);
+      height: var(--tap-min);
+      border: 1px solid var(--line-strong);
+      border-radius: var(--radius-sm);
+      color: var(--text);
+      cursor: pointer;
+      list-style: none;
+    }
+
+    summary::-webkit-details-marker {
+      display: none;
+    }
+
+    .mobile :global(.icon-close),
+    .mobile[open] :global(.icon-open) {
+      display: none;
+    }
+
+    .mobile[open] :global(.icon-close) {
+      display: block;
+    }
+
+    .panel {
+      position: absolute;
+      top: 100%;
+      left: 0;
+      right: 0;
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-4);
+      padding: var(--space-2) var(--gutter) var(--space-6);
+      background: var(--bg);
+      border-bottom: 1px solid var(--line);
+      font-size: var(--text-lg);
+    }
+
+    .panel li + li {
+      border-top: 1px solid var(--line);
+    }
+
+    .panel a:not(.btn) {
+      display: flex;
+      min-height: 52px;
+    }
+
+    .panel-cta {
+      width: 100%;
+    }
+  }
+</style>

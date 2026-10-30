@@ -1,0 +1,88 @@
+---
+import type { Servicios } from '../../lib/schemas';
+import SectionHeader from '../ui/SectionHeader.astro';
+import Icon from '../ui/Icon.astro';
+
+interface Props {
+  servicios: Servicios;
+}
+
+const { servicios } = Astro.props;
+const { header } = servicios;
+---
+
+<section id="servicios" class="servicios" aria-labelledby="servicios-titulo">
+  <div class="container inner">
+    <SectionHeader
+      id="servicios-titulo"
+      eyebrow={header.eyebrow}
+      title={header.titulo}
+      description={header.descripcion}
+      layout="split"
+    />
+
+    <ul role="list" class="grid">
+      {
+        servicios.items.map((item) => (
+          <li class="card" data-anim="fade-up">
+            <Icon name={item.icono} size={32} class="icon" />
+            <h3>{item.titulo}</h3>
+            <p>{item.descripcion}</p>
+          </li>
+        ))
+      }
+    </ul>
+  </div>
+</section>
+
+<style>
+  .servicios {
+    background: var(--bg-alt);
+    border-top: 1px solid var(--line);
+  }
+
+  .inner {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-12);
+    padding-block: var(--section-pad);
+  }
+
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 250px), 1fr));
+    gap: var(--space-4);
+  }
+
+  .card {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-4);
+    padding: var(--space-7);
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: var(--radius-lg);
+    transition: border-color var(--transition-base);
+  }
+
+  @media (hover: hover) {
+    .card:hover {
+      border-color: var(--gold);
+    }
+  }
+
+  .card :global(.icon) {
+    color: var(--gold);
+  }
+
+  h3 {
+    font-size: var(--text-2xl);
+    line-height: 1.2;
+  }
+
+  p {
+    font-size: var(--text-md);
+    line-height: 1.6;
+    color: var(--muted);
+  }
+</style>

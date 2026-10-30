@@ -1,0 +1,73 @@
+---
+interface Props {
+  eyebrow: string;
+  title: string;
+  description?: string;
+  /** id del <h2>, para usarlo en aria-labelledby de la sección. */
+  id?: string;
+  /** `split`: descripción a la derecha en escritorio (como en Servicios). */
+  layout?: 'stack' | 'split';
+}
+
+const { eyebrow, title, description, id, layout = 'stack' } = Astro.props;
+---
+
+<header class:list={['section-header', layout]}>
+  <div class="heading" data-anim="fade-up">
+    <span class="eyebrow">{eyebrow}</span>
+    <h2 id={id}>{title}</h2>
+  </div>
+  {description && <p class="description" data-anim="fade-up">{description}</p>}
+</header>
+
+<style>
+  .section-header {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-4);
+    max-width: 680px;
+  }
+
+  .heading {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+  }
+
+  .split {
+    max-width: none;
+    flex-direction: row;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    align-items: flex-end;
+    gap: var(--space-6);
+  }
+
+  .split .heading {
+    max-width: 640px;
+  }
+
+  .split .description {
+    max-width: 420px;
+  }
+
+  .eyebrow {
+    font-family: var(--font-mono);
+    font-size: var(--text-sm);
+    letter-spacing: var(--tracking-eyebrow);
+    text-transform: uppercase;
+    color: var(--gold);
+  }
+
+  h2 {
+    font-size: var(--text-h2);
+    line-height: 1.1;
+    letter-spacing: -0.01em;
+  }
+
+  .description {
+    font-size: var(--text-lg);
+    line-height: 1.6;
+    color: var(--muted);
+  }
+</style>

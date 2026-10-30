@@ -1,0 +1,138 @@
+---
+/**
+ * Tarjeta de un proyecto. Separada de la sección porque el CMS
+ * la reutilizará en la vista previa del editor de proyectos.
+ */
+import type { Proyecto, Proyectos } from '../../lib/schemas';
+import { cdn } from '../../lib/cdn';
+import Placeholder from '../ui/Placeholder.astro';
+
+interface Props {
+  proyecto: Proyecto;
+  textos: Proyectos['textos'];
+}
+
+const { proyecto, textos } = Astro.props;
+const { imagen } = proyecto;
+---
+
+<article class="card" data-anim="fade-up">
+  {
+    imagen ? (
+      <img
+        class="media"
+        src={cdn(imagen.src)}
+        alt={imagen.alt}
+        width={imagen.width}
+        height={imagen.height}
+        loading="lazy"
+        decoding="async"
+      />
+    ) : (
+      <Placeholder
+        class="media"
+        label={`[${textos.sinImagen} · ${proyecto.titulo}]`.toUpperCase()}
+      />
+    )
+  }
+
+  <div class="body">
+    <div class="title-row">
+      <h3>{proyecto.titulo}</h3>
+      <span class="etiqueta">{proyecto.etiqueta}</span>
+    </div>
+
+    <p class="resumen">{proyecto.resumen}</p>
+
+    {proyecto.stack.length > 0 && <p class="stack">{proyecto.stack.join(' · ')}</p>}
+
+    {
+      proyecto.url && (
+        <a class="link" href={proyecto.url}>
+          {textos.verSitio}
+          <span class="sr-only">: {proyecto.titulo}</span>
+        </a>
+      )
+    }
+  </div>
+</article>
+
+<style>
+  .card {
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: var(--radius-xl);
+    transition: border-color var(--transition-base);
+  }
+
+  @media (hover: hover) {
+    .card:hover {
+      border-color: var(--gold);
+    }
+  }
+
+  .card :global(.media) {
+    width: 100%;
+    height: 240px;
+    object-fit: cover;
+    border-bottom: 1px solid var(--line);
+  }
+
+  .body {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    padding: var(--space-7);
+  }
+
+  .title-row {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    align-items: center;
+    gap: var(--space-3);
+  }
+
+  h3 {
+    font-size: var(--text-3xl);
+    line-height: 1.2;
+  }
+
+  .etiqueta {
+    padding: 5px 12px;
+    border: 1px solid var(--line-strong);
+    border-radius: var(--radius-full);
+    font-family: var(--font-mono);
+    font-size: var(--text-xs);
+    color: var(--gold);
+  }
+
+  .resumen {
+    font-size: var(--text-md);
+    line-height: 1.6;
+    color: var(--muted);
+  }
+
+  .stack {
+    font-family: var(--font-mono);
+    font-size: var(--text-xs);
+    color: var(--faint);
+  }
+
+  .link {
+    align-self: flex-start;
+    display: inline-flex;
+    align-items: center;
+    min-height: var(--tap-min);
+    font-size: var(--text-md);
+    font-weight: 500;
+    color: var(--gold);
+  }
+
+  .link:hover {
+    color: var(--gold-light);
+  }
+</style>

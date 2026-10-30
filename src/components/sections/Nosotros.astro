@@ -1,0 +1,130 @@
+---
+import type { Nosotros } from '../../lib/schemas';
+import { cdn } from '../../lib/cdn';
+import Placeholder from '../ui/Placeholder.astro';
+
+interface Props {
+  nosotros: Nosotros;
+}
+
+const { nosotros } = Astro.props;
+const { foto } = nosotros;
+---
+
+<section id="nosotros" class="nosotros" aria-labelledby="nosotros-titulo">
+  <div class="container inner">
+    <div class="foto" data-anim="fade-up">
+      {
+        foto ? (
+          <img
+            src={cdn(foto.src)}
+            alt={foto.alt}
+            width={foto.width}
+            height={foto.height}
+            loading="lazy"
+            decoding="async"
+          />
+        ) : (
+          <Placeholder class="foto-ph" label={`[${nosotros.sinFoto}]`.toUpperCase()} />
+        )
+      }
+    </div>
+
+    <div class="copy">
+      <span class="eyebrow" data-anim="fade-up">{nosotros.eyebrow}</span>
+      <h2 id="nosotros-titulo" data-anim="fade-up">{nosotros.titulo}</h2>
+      <p class="texto" data-anim="fade-up">{nosotros.texto}</p>
+      <ul role="list" class="tecnologias" data-anim="fade-up">
+        {nosotros.tecnologias.map((tec) => <li>{tec}</li>)}
+      </ul>
+      <a class="portafolio" href={nosotros.portafolio.href}>{nosotros.portafolio.label}</a>
+    </div>
+  </div>
+</section>
+
+<style>
+  .nosotros {
+    border-top: 1px solid var(--line);
+  }
+
+  .inner {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--space-12);
+    padding-block: var(--section-pad);
+  }
+
+  .foto {
+    flex: 1 1 280px;
+    max-width: 360px;
+    aspect-ratio: 1;
+    overflow: hidden;
+    border: 1px solid var(--line);
+    border-radius: var(--radius-xl);
+  }
+
+  .foto img,
+  .foto :global(.foto-ph) {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  .copy {
+    flex: 999 1 460px;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+  }
+
+  .eyebrow {
+    font-family: var(--font-mono);
+    font-size: var(--text-sm);
+    letter-spacing: var(--tracking-eyebrow);
+    text-transform: uppercase;
+    color: var(--gold);
+  }
+
+  h2 {
+    font-size: var(--text-h2-alt);
+    line-height: 1.12;
+  }
+
+  .texto {
+    max-width: 620px;
+    font-size: var(--text-lg);
+    line-height: 1.65;
+    color: var(--muted);
+  }
+
+  .tecnologias {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-2);
+  }
+
+  .tecnologias li {
+    padding: 7px 14px;
+    border: 1px solid var(--line-strong);
+    border-radius: var(--radius-full);
+    font-family: var(--font-mono);
+    font-size: var(--text-sm);
+    color: var(--text-soft);
+  }
+
+  .portafolio {
+    align-self: flex-start;
+    display: inline-flex;
+    align-items: center;
+    min-height: var(--tap-min);
+    font-size: var(--text-base);
+    font-weight: 500;
+    color: var(--gold);
+  }
+
+  .portafolio:hover {
+    color: var(--gold-light);
+  }
+</style>

@@ -1,0 +1,29 @@
+{
+  "header": {
+    "eyebrow": "01 — Servicios",
+    "titulo": "Lo que construimos para tu negocio",
+    "descripcion": "Desde una página para presentar tu marca hasta un sistema completo para manejar ventas e inventario."
+  },
+  "items": [
+    {
+      "icono": "web",
+      "titulo": "Desarrollo web",
+      "descripcion": "Landing pages, sitios corporativos y catálogos rápidos, responsivos y fáciles de administrar."
+    },
+    {
+      "icono": "android",
+      "titulo": "Apps Android",
+      "descripcion": "Aplicaciones nativas para tus clientes o tu equipo, con funciones sin conexión, impresión y sincronización."
+    },
+    {
+      "icono": "database",
+      "titulo": "Sistemas a la medida",
+      "descripcion": "Punto de venta, facturación, inventario y paneles administrativos pensados para cómo trabaja tu negocio."
+    },
+    {
+      "icono": "shield",
+      "titulo": "Soporte y mantenimiento",
+      "descripcion": "Actualizaciones, hosting, respaldos y mejoras continuas para que tu software siga funcionando."
+    }
+  ]
+}

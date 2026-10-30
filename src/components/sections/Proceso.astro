@@ -1,0 +1,95 @@
+---
+import type { Proceso } from '../../lib/schemas';
+import SectionHeader from '../ui/SectionHeader.astro';
+
+interface Props {
+  proceso: Proceso;
+}
+
+const { proceso } = Astro.props;
+const { header } = proceso;
+---
+
+<section id="proceso" class="proceso" aria-labelledby="proceso-titulo">
+  <div class="container inner">
+    <SectionHeader
+      id="proceso-titulo"
+      eyebrow={header.eyebrow}
+      title={header.titulo}
+      description={header.descripcion}
+    />
+
+    <ol role="list" class="pasos">
+      {
+        proceso.pasos.map((paso, i) => (
+          <li data-anim="fade-up" data-anim-delay={String(i * 0.08)}>
+            <span
+              class:list={['line', { first: i === 0 }]}
+              data-anim="draw-line"
+              data-anim-delay={String(i * 0.12)}
+              aria-hidden="true"
+            />
+            <span class="numero" aria-hidden="true">{String(i + 1).padStart(2, '0')}</span>
+            <h3>{paso.titulo}</h3>
+            <p>{paso.descripcion}</p>
+          </li>
+        ))
+      }
+    </ol>
+  </div>
+</section>
+
+<style>
+  .proceso {
+    background: var(--bg-alt);
+    border-top: 1px solid var(--line);
+  }
+
+  .inner {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-12);
+    padding-block: var(--section-pad);
+  }
+
+  .pasos {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 200px), 1fr));
+    gap: var(--space-4);
+  }
+
+  li {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .line {
+    display: block;
+    height: 2px;
+    margin-bottom: 10px;
+    background: var(--line-strong);
+    transform-origin: left center;
+  }
+
+  .line.first {
+    background: var(--gold);
+  }
+
+  .numero {
+    font-family: var(--font-mono);
+    font-size: var(--text-sm);
+    color: var(--gold);
+  }
+
+  h3 {
+    font-size: var(--text-xl);
+    line-height: 1.2;
+  }
+
+  p {
+    font-size: var(--text-md);
+    line-height: 1.55;
+    color: var(--muted);
+  }
+</style>

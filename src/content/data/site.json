@@ -1,0 +1,29 @@
+{
+  "nombre": "Nexbytes",
+  "tagline": "Soluciones tecnológicas para negocios de El Salvador y la región.",
+  "ciudad": "Santa Ana, El Salvador",
+  "correo": "[CORREO]",
+  "whatsapp": "[WHATSAPP]",
+  "nav": [
+    { "label": "Servicios", "href": "#servicios" },
+    { "label": "Proyectos", "href": "#proyectos" },
+    { "label": "Proceso", "href": "#proceso" },
+    { "label": "Producto", "href": "#producto" }
+  ],
+  "ctaMenu": { "label": "Cotizar proyecto", "href": "#cotizar" },
+  "seo": {
+    "titulo": "Nexbytes — Estudio de software",
+    "descripcion": "Diseñamos y desarrollamos sitios web, apps Android y sistemas de gestión que resuelven problemas reales: vender, facturar, organizar y llegar a más clientes."
+  },
+  "footer": {
+    "tituloContacto": "Contacto",
+    "tituloExplorar": "Explorar",
+    "explorar": [
+      { "label": "Servicios", "href": "#servicios" },
+      { "label": "Proyectos", "href": "#proyectos" },
+      { "label": "Cotizar", "href": "#cotizar" }
+    ],
+    "derechos": "Nexbytes. Todos los derechos reservados.",
+    "codigo": "com.nexbytes"
+  }
+}

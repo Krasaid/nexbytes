@@ -1,0 +1,33 @@
+---
+/**
+ * Caja con cuadrícula para imágenes que todavía no existen en R2.
+ * El tamaño lo define quien la usa (class o style).
+ */
+interface Props {
+  label: string;
+  class?: string;
+  style?: string;
+}
+
+const { label, class: className, style } = Astro.props;
+---
+
+<div class:list={['ph', 'placeholder', className]} style={style} role="img" aria-label={label}>
+  <span aria-hidden="true">{label}</span>
+</div>
+
+<style>
+  .placeholder {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: var(--space-4);
+    text-align: center;
+  }
+
+  span {
+    font-family: var(--font-mono);
+    font-size: var(--text-sm);
+    color: var(--faint);
+  }
+</style>

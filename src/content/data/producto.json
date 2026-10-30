@@ -1,0 +1,22 @@
+{
+  "visible": true,
+  "eyebrow": "04 — Producto propio · Próximamente",
+  "nombre": "[NOMBRE DEL SAAS]",
+  "descripcion": "[Una línea sobre qué resuelve: por ejemplo, ventas, facturación e inventario para pequeños negocios, desde el celular o la computadora.]",
+  "beneficios": [
+    "[Beneficio principal 1]",
+    "[Beneficio principal 2]",
+    "[Beneficio principal 3]"
+  ],
+  "listaEspera": {
+    "titulo": "Únete a la lista de espera",
+    "texto": "Te avisamos cuando abramos el acceso anticipado.",
+    "label": "Correo electrónico",
+    "placeholder": "tu@negocio.com",
+    "boton": "Quiero acceso anticipado",
+    "enviando": "Enviando…",
+    "error": "Escribe un correo válido, por ejemplo tu@negocio.com.",
+    "exitoTitulo": "¡Estás en la lista!",
+    "exitoTexto": "Te escribiremos en cuanto el producto esté listo para probarse."
+  }
+}

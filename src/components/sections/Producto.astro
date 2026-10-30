@@ -1,0 +1,114 @@
+---
+import type { Producto } from '../../lib/schemas';
+import Icon from '../ui/Icon.astro';
+import ListaEspera from '../islands/ListaEspera.vue';
+
+interface Props {
+  producto: Producto;
+}
+
+const { producto } = Astro.props;
+---
+
+{
+  producto.visible && (
+    <section id="producto" class="producto" aria-labelledby="producto-titulo">
+      <div class="container inner">
+        <div class="box" data-anim="fade-up">
+          <div class="copy">
+            <span class="eyebrow">{producto.eyebrow}</span>
+            <h2 id="producto-titulo">{producto.nombre}</h2>
+            <p class="descripcion">{producto.descripcion}</p>
+            <ul role="list" class="beneficios">
+              {producto.beneficios.map((beneficio) => (
+                <li>
+                  <Icon name="check" size={18} strokeWidth={2} class="check" />
+                  <span>{beneficio}</span>
+                </li>
+              ))}
+            </ul>
+          </div>
+
+          <div class="card">
+            <ListaEspera client:visible textos={producto.listaEspera} />
+          </div>
+        </div>
+      </div>
+    </section>
+  )
+}
+
+<style>
+  .producto {
+    border-top: 1px solid var(--line);
+  }
+
+  .inner {
+    padding-block: var(--section-pad);
+  }
+
+  .box {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--space-12);
+    padding: clamp(28px, 5vw, 56px);
+    background: var(--bg-alt);
+    border: 1px solid var(--gold);
+    border-radius: var(--radius-2xl);
+  }
+
+  .copy {
+    flex: 999 1 460px;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+  }
+
+  .eyebrow {
+    font-family: var(--font-mono);
+    font-size: var(--text-sm);
+    letter-spacing: var(--tracking-eyebrow);
+    text-transform: uppercase;
+    color: var(--gold);
+  }
+
+  h2 {
+    font-size: var(--text-h2-alt);
+    line-height: 1.12;
+  }
+
+  .descripcion {
+    max-width: 560px;
+    font-size: var(--text-lg);
+    line-height: 1.6;
+    color: var(--muted);
+  }
+
+  .beneficios {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .beneficios li {
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+  }
+
+  .beneficios :global(.check) {
+    flex: none;
+    color: var(--gold);
+  }
+
+  .card {
+    flex: 1 1 340px;
+    min-width: 0;
+    padding: var(--space-7);
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: var(--radius-lg);
+  }
+</style>

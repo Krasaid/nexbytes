@@ -1,0 +1,47 @@
+---
+import Base from '../layouts/Base.astro';
+import Nav from '../components/sections/Nav.astro';
+import Hero from '../components/sections/Hero.astro';
+import Servicios from '../components/sections/Servicios.astro';
+import Proyectos from '../components/sections/Proyectos.astro';
+import Proceso from '../components/sections/Proceso.astro';
+import Producto from '../components/sections/Producto.astro';
+import Cotizar from '../components/sections/Cotizar.astro';
+import Nosotros from '../components/sections/Nosotros.astro';
+import Footer from '../components/sections/Footer.astro';
+import {
+  getCotizador,
+  getHero,
+  getNosotros,
+  getProceso,
+  getProducto,
+  getProyectos,
+  getServicios,
+  getSite,
+} from '../lib/content';
+
+const [site, hero, servicios, proyectos, proceso, producto, cotizador, nosotros] = await Promise.all([
+  getSite(),
+  getHero(),
+  getServicios(),
+  getProyectos(),
+  getProceso(),
+  getProducto(),
+  getCotizador(),
+  getNosotros(),
+]);
+---
+
+<Base title={site.seo.titulo} description={site.seo.descripcion}>
+  <Nav site={site} />
+  <main>
+    <Hero hero={hero} />
+    <Servicios servicios={servicios} />
+    <Proyectos proyectos={proyectos} />
+    <Proceso proceso={proceso} />
+    <Producto producto={producto} />
+    <Cotizar cotizador={cotizador} site={site} />
+    <Nosotros nosotros={nosotros} />
+  </main>
+  <Footer site={site} />
+</Base>

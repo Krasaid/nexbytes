@@ -1,0 +1,8 @@
+{
+  "eyebrow": "06 — Detrás de Nexbytes",
+  "titulo": "Un estudio pequeño, con trato directo",
+  "texto": "Nexbytes está liderado por Fernando Martínez, desarrollador Android y web en Santa Ana, El Salvador. Hablas directamente con quien construye tu proyecto: sin intermediarios y con atención cercana de principio a fin.",
+  "sinFoto": "Tu foto",
+  "tecnologias": ["Java 21", "Spring Boot", "Android", "Firebase", "MongoDB", "Vue"],
+  "portafolio": { "label": "Ver portafolio personal →", "href": "https://krasaid.web.app" }
+}

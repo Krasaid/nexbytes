@@ -1,0 +1,60 @@
+---
+import type { Proyectos } from '../../lib/schemas';
+import SectionHeader from '../ui/SectionHeader.astro';
+import ProyectoCard from './ProyectoCard.astro';
+
+interface Props {
+  proyectos: Proyectos;
+}
+
+const { proyectos } = Astro.props;
+const { header } = proyectos;
+---
+
+<section id="proyectos" class="proyectos" aria-labelledby="proyectos-titulo">
+  <div class="container inner">
+    <SectionHeader
+      id="proyectos-titulo"
+      eyebrow={header.eyebrow}
+      title={header.titulo}
+      description={header.descripcion}
+    />
+
+    <ul role="list" class="grid">
+      {
+        proyectos.items.map((proyecto) => (
+          <li>
+            <ProyectoCard proyecto={proyecto} textos={proyectos.textos} />
+          </li>
+        ))
+      }
+    </ul>
+  </div>
+</section>
+
+<style>
+  .proyectos {
+    border-top: 1px solid var(--line);
+  }
+
+  .inner {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-12);
+    padding-block: var(--section-pad);
+  }
+
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 460px), 1fr));
+    gap: var(--space-5);
+  }
+
+  .grid li {
+    display: flex;
+  }
+
+  .grid li > :global(*) {
+    flex: 1;
+  }
+</style>

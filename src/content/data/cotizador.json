@@ -1,0 +1,82 @@
+{
+  "header": {
+    "eyebrow": "05 — Cotizador",
+    "titulo": "Cuéntanos qué necesitas",
+    "descripcion": "Responde unas preguntas rápidas y te enviamos una propuesta formal en menos de 48 horas."
+  },
+  "pasos": [
+    { "nombre": "Tipo", "titulo": "¿Qué tipo de proyecto tienes en mente?" },
+    { "nombre": "Funciones", "titulo": "¿Qué funciones necesita?", "ayuda": "Elige todas las que apliquen." },
+    { "nombre": "Plazo", "titulo": "¿Para cuándo lo necesitas?" },
+    { "nombre": "Presupuesto", "titulo": "¿Qué presupuesto tienes contemplado?", "ayuda": "Nos ayuda a proponerte la solución que mejor se ajusta." },
+    { "nombre": "Contacto", "titulo": "¿Cómo te contactamos?" }
+  ],
+  "tipos": [
+    { "label": "Sitio web o landing", "hint": "Presentar tu marca y captar clientes" },
+    { "label": "Tienda en línea", "hint": "Catálogo, carrito y pedidos" },
+    { "label": "App Android", "hint": "Para tus clientes o tu equipo" },
+    { "label": "Sistema a la medida", "hint": "POS, facturación, inventario" },
+    { "label": "Mejorar un sistema existente", "hint": "Cambios, soporte o migración" },
+    { "label": "Aún no lo sé", "hint": "Te ayudamos a definirlo" }
+  ],
+  "funciones": [
+    "Inicio de sesión de usuarios",
+    "Panel administrativo",
+    "Pagos en línea",
+    "Facturación",
+    "Inventario",
+    "Reportes y estadísticas",
+    "Funciona sin internet",
+    "Impresión de tickets",
+    "Notificaciones",
+    "Varios roles de usuario"
+  ],
+  "plazos": [
+    "Lo antes posible",
+    "En 1 a 2 meses",
+    "En 3 meses o más",
+    "Sin fecha definida"
+  ],
+  "presupuestos": [
+    "[RANGO 1]",
+    "[RANGO 2]",
+    "[RANGO 3]",
+    "[RANGO 4]",
+    "Prefiero que me asesoren"
+  ],
+  "campos": {
+    "nombre": { "label": "Nombre", "placeholder": "Tu nombre" },
+    "empresa": { "label": "Negocio o empresa", "placeholder": "Opcional" },
+    "correo": { "label": "Correo", "placeholder": "tu@correo.com" },
+    "whatsapp": { "label": "WhatsApp", "placeholder": "+503 0000 0000" },
+    "descripcion": { "label": "Cuéntanos brevemente tu idea", "placeholder": "¿Qué problema quieres resolver?" }
+  },
+  "botones": {
+    "atras": "Atrás",
+    "siguiente": "Siguiente",
+    "enviar": "Enviar solicitud",
+    "enviando": "Enviando…",
+    "otro": "Cotizar otro proyecto"
+  },
+  "progreso": "Paso {actual} de {total}",
+  "errores": {
+    "elegir": "Elige una opción para continuar.",
+    "nombre": "Escribe tu nombre.",
+    "contacto": "Déjanos un correo o un WhatsApp para responderte.",
+    "correo": "Revisa el correo, parece incompleto."
+  },
+  "exito": {
+    "titulo": "¡Recibimos tu solicitud!",
+    "texto": "Revisaremos los detalles y te enviaremos una propuesta con alcance, tiempos y costo en menos de 48 horas."
+  },
+  "resumen": {
+    "titulo": "Tu resumen",
+    "proyecto": "Proyecto",
+    "funciones": "Funciones",
+    "plazo": "Plazo",
+    "presupuesto": "Presupuesto",
+    "vacio": "—",
+    "contactoTexto": "¿Prefieres hablar directo? Escríbenos por",
+    "contactoLink": "WhatsApp"
+  }
+}

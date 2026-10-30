@@ -1,0 +1,18 @@
+{
+  "eyebrow": "Estudio de software · El Salvador",
+  "titulo": "Software a la medida para negocios que quieren crecer.",
+  "subtitulo": "Diseñamos y desarrollamos sitios web, apps Android y sistemas de gestión que resuelven problemas reales: vender, facturar, organizar y llegar a más clientes.",
+  "ctaPrimario": { "label": "Cotizar mi proyecto", "href": "#cotizar" },
+  "ctaSecundario": { "label": "Ver proyectos", "href": "#proyectos" },
+  "tarjeta": {
+    "marca": "NEXBYTES",
+    "subtitulo": "Soluciones tecnológicas",
+    "codigo": "com.nexbytes.*",
+    "ubicacion": "Santa Ana, SV"
+  },
+  "chips": [
+    { "numero": "01", "label": "Web" },
+    { "numero": "02", "label": "Android" },
+    { "numero": "03", "label": "Sistemas" }
+  ]
+}

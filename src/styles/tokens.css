@@ -1,0 +1,96 @@
+/* ============================================
+   Nexbytes — Design tokens
+   Valores tomados de docs/mockup/landing.dc.html.
+   Ningún componente debe usar hex directos: solo estas variables.
+   ============================================ */
+
+:root {
+  /* ── Fondos y superficies ── */
+  --bg:        #0A0A0B;
+  --bg-alt:    #0D0D0E;
+  --surface:   #121213;
+  --surface-2: #0F0F10;
+
+  /* ── Líneas ── */
+  --line:        #2B2720;
+  --line-strong: #3A352B;
+  --line-check:  #5A5448; /* borde de checkbox sin marcar */
+
+  /* ── Texto ── */
+  --text:        #F3EFE6;
+  --text-soft:   #D9D3C7;
+  --text-option: #E4DED2; /* texto de opciones del cotizador */
+  --muted:       #A8A196;
+  --faint:       #8F897E;
+
+  /* ── Acento ── */
+  --gold:       #D4AF37;
+  --gold-light: #E6C068;
+  --gold-tint:  rgb(212 175 55 / 0.12);
+  --on-gold:    var(--bg); /* texto sobre fondo dorado */
+
+  /* ── Placeholder con cuadrícula (.ph) ── */
+  --ph-bg:   #111112;
+  --ph-grid: #1E1C18;
+
+  /* ── Tipografía ── */
+  --font-sans: 'Space Grotesk', system-ui, sans-serif;
+  --font-mono: 'JetBrains Mono', ui-monospace, monospace;
+
+  --text-xs:   0.75rem;    /* 12 */
+  --text-sm:   0.8125rem;  /* 13 */
+  --text-label: 0.875rem;  /* 14 */
+  --text-md:   0.9375rem;  /* 15 */
+  --text-base: 1rem;       /* 16 */
+  --text-lg:   1.0625rem;  /* 17 */
+  --text-xl:   1.1875rem;  /* 19 */
+  --text-2xl:  1.3125rem;  /* 21 */
+  --text-3xl:  1.375rem;   /* 22 */
+  --text-4xl:  1.625rem;   /* 26 */
+  --text-h2-alt: clamp(30px, 3.6vw, 42px);
+  --text-h2:   clamp(32px, 4vw, 46px);
+  --text-h1:   clamp(40px, 5.6vw, 72px);
+
+  --tracking-eyebrow: 0.14em;
+  --tracking-brand:   0.18em;
+
+  /* ── Espaciado ── */
+  --space-1:  0.25rem;  /* 4 */
+  --space-2:  0.5rem;   /* 8 */
+  --space-3:  0.75rem;  /* 12 */
+  --space-4:  1rem;     /* 16 */
+  --space-5:  1.25rem;  /* 20 */
+  --space-6:  1.5rem;   /* 24 */
+  --space-7:  1.75rem;  /* 28 */
+  --space-8:  2rem;     /* 32 */
+  --space-10: 2.5rem;   /* 40 */
+  --space-12: 3rem;     /* 48 */
+  --space-14: 3.5rem;   /* 56 */
+  --space-16: 4rem;     /* 64 */
+
+  /* ── Radios ── */
+  --radius-sm:   8px;
+  --radius-md:   10px;
+  --radius-lg:   14px;
+  --radius-xl:   16px;
+  --radius-2xl:  20px;
+  --radius-full: 999px;
+
+  /* ── Layout ── */
+  --container:    1200px;
+  --gutter:       24px;
+  --section-pad:  96px;
+  --tap-min:      44px;
+  --nav-height:   80px;
+
+  /* ── Transiciones ── */
+  --ease:            cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-fast: 150ms var(--ease);
+  --transition-base: 250ms var(--ease);
+}
+
+@media (max-width: 767px) {
+  :root {
+    --section-pad: 64px;
+  }
+}

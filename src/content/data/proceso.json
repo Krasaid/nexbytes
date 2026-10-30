@@ -1,0 +1,29 @@
+{
+  "header": {
+    "eyebrow": "03 — Proceso",
+    "titulo": "Claro de principio a fin",
+    "descripcion": "Sabes en qué etapa va tu proyecto y qué sigue, sin sorpresas."
+  },
+  "pasos": [
+    {
+      "titulo": "Descubrimiento",
+      "descripcion": "Conversamos sobre tu negocio, tu problema y lo que esperas lograr."
+    },
+    {
+      "titulo": "Propuesta",
+      "descripcion": "Recibes alcance, tiempos y costo por escrito antes de empezar."
+    },
+    {
+      "titulo": "Desarrollo",
+      "descripcion": "Avances por etapas que puedes revisar y probar."
+    },
+    {
+      "titulo": "Entrega",
+      "descripcion": "Publicamos, capacitamos a tu equipo y entregamos accesos."
+    },
+    {
+      "titulo": "Soporte",
+      "descripcion": "Seguimos contigo con mantenimiento y mejoras."
+    }
+  ]
+}

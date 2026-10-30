@@ -1,0 +1,44 @@
+---
+import type { Cotizador as CotizadorData, Site } from '../../lib/schemas';
+import { whatsappUrl } from '../../lib/links';
+import SectionHeader from '../ui/SectionHeader.astro';
+import Cotizador from '../islands/Cotizador.vue';
+
+interface Props {
+  cotizador: CotizadorData;
+  site: Site;
+}
+
+const { cotizador, site } = Astro.props;
+const { header } = cotizador;
+
+// Mientras el número sea un placeholder, el link lleva al bloque de contacto del footer.
+const whatsappHref = whatsappUrl(site.whatsapp) ?? '#contacto';
+---
+
+<section id="cotizar" class="cotizar" aria-labelledby="cotizar-titulo">
+  <div class="container inner">
+    <SectionHeader
+      id="cotizar-titulo"
+      eyebrow={header.eyebrow}
+      title={header.titulo}
+      description={header.descripcion}
+    />
+
+    <Cotizador client:visible cotizador={cotizador} whatsappHref={whatsappHref} />
+  </div>
+</section>
+
+<style>
+  .cotizar {
+    background: var(--bg-alt);
+    border-top: 1px solid var(--line);
+  }
+
+  .inner {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-10);
+    padding-block: var(--section-pad);
+  }
+</style>
