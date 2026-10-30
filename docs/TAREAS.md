@@ -124,10 +124,10 @@ Todas viven en `src/components/sections/`, reciben sus datos de `content.ts` des
 - Lighthouse móvil con 95 o más en Performance, Accessibility, Best Practices y SEO. Corregir lo que falte.
 - Revisar navegación con teclado de punta a punta, incluido el cotizador.
 
-### [ ] T13. Configuración de despliegue
+### [x] T13. Configuración de despliegue
 - `firebase.json`: `public: dist`, `cleanUrls`, cache largo e inmutable para `/_astro/**` y las fuentes, sin cache para el HTML, headers de seguridad (CSP que permita Firebase, reCAPTCHA y el dominio de R2; `X-Content-Type-Options`; `Referrer-Policy`).
 - Script `npm run deploy` (build + deploy) y canal de preview.
-- Configurar CORS del bucket R2 y el dominio propio (ej. `cdn.nexbytes.com`), y documentarlo en el README.
+- Configurar CORS del bucket R2 y el dominio propio (ej. `cdn.nexbytes.com`), y documentarlo en el README. (Documentado en el README con `docs/r2-cors.json`; aplicarlo requiere la cuenta de Cloudflare y el dominio.)
 
 ---
 

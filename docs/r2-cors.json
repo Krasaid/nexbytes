@@ -1,0 +1,17 @@
+{
+  "rules": [
+    {
+      "allowed": {
+        "origins": [
+          "https://nexbytes1.web.app",
+          "https://nexbytes1.firebaseapp.com",
+          "http://localhost:4321",
+          "http://localhost:4322"
+        ],
+        "methods": ["GET", "HEAD"],
+        "headers": ["*"]
+      },
+      "maxAgeSeconds": 86400
+    }
+  ]
+}

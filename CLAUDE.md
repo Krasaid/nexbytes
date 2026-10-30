@@ -85,9 +85,10 @@ src/
 - `npm test`: pruebas unitarias (Vitest, `tests/unit`)
 - `npm run test:rules`: pruebas de `firestore.rules` con el emulador (`tests/rules`, necesita Java)
 - `npm run emulators`: emulador de Firestore para probar los formularios en local (con `PUBLIC_FIRESTORE_EMULATOR` en `.env`)
-- `firebase deploy --only hosting`: publicar
-- `firebase deploy --only firestore:rules`: publicar las reglas de Firestore
-- `firebase hosting:channel:deploy preview`: vista previa
+- `npm run deploy`: pruebas + build + publicar (`firebase deploy --only hosting`)
+- `npm run deploy:preview`: pruebas + build + canal de vista previa `preview`
+- `npm run deploy:rules`: publicar las reglas de Firestore
+- La CSP la genera Astro (`security.csp` en `astro.config.mjs`); un script `is:inline` nuevo necesita su hash con `Astro.csp.insertScriptHash()` (ver `Base.astro`)
 
 ## Variables de entorno (`.env`, nunca se sube)
 

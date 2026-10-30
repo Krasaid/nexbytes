@@ -12,7 +12,10 @@
     "astro": "astro",
     "test": "vitest run tests/unit",
     "test:rules": "node scripts/test-rules.mjs",
-    "emulators": "firebase emulators:start --only firestore"
+    "emulators": "firebase emulators:start --only firestore",
+    "deploy": "npm test && npm run build && firebase deploy --only hosting",
+    "deploy:preview": "npm test && npm run build && firebase hosting:channel:deploy preview --expires 7d",
+    "deploy:rules": "firebase deploy --only firestore:rules"
   },
   "dependencies": {
     "@astrojs/check": "^0.9.12",

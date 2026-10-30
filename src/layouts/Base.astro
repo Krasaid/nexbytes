@@ -10,6 +10,8 @@ import '../styles/global.css';
 // precargarlos evita que el texto cambie de tamaño cuando llega la fuente (CLS).
 import spaceGrotesk400 from '@fontsource/space-grotesk/files/space-grotesk-latin-400-normal.woff2?url';
 import spaceGrotesk600 from '@fontsource/space-grotesk/files/space-grotesk-latin-600-normal.woff2?url';
+import { createHash } from 'node:crypto';
+import animFlag from '../scripts/anim-flag.js?raw';
 import { cdn } from '../lib/cdn';
 import type { Imagen } from '../lib/schemas';
 
@@ -27,6 +29,9 @@ interface Props {
 const { title, description, siteName, image, noindex = false } = Astro.props;
 const canonical = new URL(Astro.url.pathname, Astro.site);
 const ogImage = image ? cdn(image.src) : undefined;
+
+// Astro no calcula el hash de los scripts is:inline: se agrega aquí a la CSP.
+Astro.csp?.insertScriptHash(`sha256-${createHash('sha256').update(animFlag).digest('base64')}`);
 ---
 
 <!doctype html>
@@ -66,21 +71,11 @@ const ogImage = image ? cdn(image.src) : undefined;
     <meta name="twitter:card" content={image ? 'summary_large_image' : 'summary'} />
 
     <slot name="head" />
-
-    <script is:inline>
-      // Activa los estados iniciales de animación solo si hay JS y no se pidió
-      // movimiento reducido. Si animations.ts no corre en 1.5 s, se muestra todo.
-      (function () {
-        var root = document.documentElement;
-        if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
-        root.classList.add('anim');
-        setTimeout(function () {
-          if (!root.dataset.animReady) root.classList.remove('anim');
-        }, 1500);
-      })();
-    </script>
   </head>
   <body>
+    <!-- Inline y al inicio del <body>: corre antes del primer pintado y queda
+         después del <meta> de CSP que Astro inserta al final del <head>. -->
+    <script is:inline set:html={animFlag} />
     <a class="skip-link" href="#contenido">Saltar al contenido</a>
     <slot />
     <script>
