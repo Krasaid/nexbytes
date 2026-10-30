@@ -2,8 +2,8 @@
   "nombre": "Nexbytes",
   "tagline": "Soluciones tecnológicas para negocios de El Salvador y la región.",
   "ciudad": "Santa Ana, El Salvador",
-  "correo": "[CORREO]",
-  "whatsapp": "[WHATSAPP]",
+  "correo": "contactferdeveloper@gmail.com",
+  "whatsapp": "+503 7923 4059",
   "nav": [
     { "label": "Servicios", "href": "/#servicios" },
     { "label": "Proyectos", "href": "/#proyectos" },
