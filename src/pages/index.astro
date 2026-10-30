@@ -19,6 +19,7 @@ import {
   getServicios,
   getSite,
 } from '../lib/content';
+import { professionalServiceJsonLd, serializeJsonLd } from '../lib/seo';
 
 const [site, hero, servicios, proyectos, proceso, producto, cotizador, nosotros] = await Promise.all([
   getSite(),
@@ -30,11 +31,23 @@ const [site, hero, servicios, proyectos, proceso, producto, cotizador, nosotros]
   getCotizador(),
   getNosotros(),
 ]);
+
+const jsonLd = serializeJsonLd(professionalServiceJsonLd(site, new URL('/', Astro.site)));
 ---
 
-<Base title={site.seo.titulo} description={site.seo.descripcion}>
+<Base
+  title={site.seo.titulo}
+  description={site.seo.descripcion}
+  siteName={site.nombre}
+  image={site.seo.imagenOg}
+>
+  <script
+    slot="head"
+    type="application/ld+json"
+    set:html={jsonLd}
+  />
   <Nav site={site} />
-  <main>
+  <main id="contenido">
     <Hero hero={hero} />
     <Servicios servicios={servicios} />
     <Proyectos proyectos={proyectos} />

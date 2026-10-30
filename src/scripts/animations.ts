@@ -4,7 +4,8 @@
  *
  *   data-anim="fade-up"      aparece subiendo (ScrollTrigger; en grids se escalona)
  *   data-anim="draw-line"    línea que se dibuja de izquierda a derecha (scaleX)
- *   data-anim="split-words"  título que entra palabra por palabra (solo hero)
+ *   data-anim="split-words"  título que sube palabra por palabra, siempre visible (solo hero)
+ *   data-anim="rise"         sube sin desvanecerse, siempre visible (solo hero)
  *   data-anim="draw-border"  tarjeta cuyo borde se dibuja (solo hero)
  *   data-anim-delay="0.1"    retraso en segundos (en el hero: posición en la línea de tiempo)
  *   data-anim-scope="hero"   contenedor animado por la entrada, no por scroll
@@ -15,6 +16,8 @@
  *   los estados iniciales bajo esa clase. Si este módulo no llega a correr,
  *   el script inline quita la clase a los 3 s y todo queda visible.
  * - Solo se animan opacity y transform: no hay saltos de layout (CLS = 0).
+ * - El título y el subtítulo del hero nunca pasan por opacity 0: son el LCP y
+ *   deben pintarse con el primer render, aunque el JS tarde en llegar.
  */
 import { gsap } from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
@@ -65,18 +68,24 @@ function initHero() {
   const scope = document.querySelector<HTMLElement>(HERO);
   if (!scope) return;
 
-  const tl = gsap.timeline({ defaults: { duration: 0.7, ease: EASE } });
+  // El texto termina de entrar antes de 0.8 s; el borde de la tarjeta es decorativo.
+  const tl = gsap.timeline({ defaults: { duration: 0.5, ease: EASE } });
 
   scope.querySelectorAll<HTMLElement>('[data-anim]').forEach((el) => {
     const at = delayOf(el, 0);
 
     switch (el.dataset.anim) {
       case 'split-words': {
+        // El desplazamiento inicial (CSS) pasa del título a cada palabra en el
+        // mismo frame: no hay salto visible.
         const words = splitWords(el);
-        tl.set(el, { opacity: 1 }, at);
-        tl.fromTo(words, { opacity: 0, y: '0.35em' }, { opacity: 1, y: 0, stagger: 0.04 }, at);
+        gsap.set(el, { y: 0 });
+        tl.fromTo(words, { y: 16 }, { y: 0, stagger: 0.03 }, at);
         break;
       }
+      case 'rise':
+        tl.fromTo(el, { y: 16 }, { y: 0, duration: 0.6 }, at);
+        break;
       case 'draw-border':
         drawBorder(tl, el, at);
         break;
@@ -92,7 +101,7 @@ function drawBorder(tl: gsap.core.Timeline, card: HTMLElement, at: number) {
   const rect = outline?.querySelector('rect');
   const corners = card.querySelectorAll('[data-anim-part="corner"]');
   const content = card.querySelectorAll('[data-anim-part="content"]');
-  const drawEnd = at + 1.2;
+  const drawEnd = at + 1;
 
   tl.set(card, { opacity: 1, borderColor: 'transparent' }, at);
 
@@ -104,13 +113,13 @@ function drawBorder(tl: gsap.core.Timeline, card: HTMLElement, at: number) {
     tl.fromTo(
       rect,
       { attr: { 'stroke-dashoffset': 1 } },
-      { attr: { 'stroke-dashoffset': 0 }, duration: 1.2, ease: 'power2.inOut' },
+      { attr: { 'stroke-dashoffset': 0 }, duration: 1, ease: 'power2.inOut' },
       at,
     );
   }
 
-  tl.fromTo(content, { opacity: 0, y: 8 }, { opacity: 1, y: 0, stagger: 0.12 }, at + 0.4);
-  tl.fromTo(corners, { scale: 0 }, { scale: 1, duration: 0.5, stagger: 0.1 }, at + 0.9);
+  tl.fromTo(content, { opacity: 0, y: 8 }, { opacity: 1, y: 0, stagger: 0.1 }, at + 0.2);
+  tl.fromTo(corners, { scale: 0 }, { scale: 1, duration: 0.4, stagger: 0.1 }, at + 0.8);
   tl.set(card, { clearProps: 'borderColor' }, drawEnd);
   if (outline) tl.set(outline, { opacity: 0 }, drawEnd);
 }

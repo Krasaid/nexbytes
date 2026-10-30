@@ -773,7 +773,10 @@ dd {
   color: var(--muted);
 }
 
+/* Enlace dentro de un párrafo: subrayado, no solo color (WCAG 1.4.1). */
 .contacto a {
   color: var(--gold);
+  text-decoration: underline;
+  text-underline-offset: 3px;
 }
 </style>

@@ -5,25 +5,33 @@
   "correo": "[CORREO]",
   "whatsapp": "[WHATSAPP]",
   "nav": [
-    { "label": "Servicios", "href": "#servicios" },
-    { "label": "Proyectos", "href": "#proyectos" },
-    { "label": "Proceso", "href": "#proceso" },
-    { "label": "Producto", "href": "#producto" }
+    { "label": "Servicios", "href": "/#servicios" },
+    { "label": "Proyectos", "href": "/#proyectos" },
+    { "label": "Proceso", "href": "/#proceso" },
+    { "label": "Producto", "href": "/#producto" }
   ],
-  "ctaMenu": { "label": "Cotizar proyecto", "href": "#cotizar" },
+  "ctaMenu": { "label": "Cotizar proyecto", "href": "/#cotizar" },
   "seo": {
     "titulo": "Nexbytes — Estudio de software",
-    "descripcion": "Diseñamos y desarrollamos sitios web, apps Android y sistemas de gestión que resuelven problemas reales: vender, facturar, organizar y llegar a más clientes."
+    "descripcion": "Diseñamos y desarrollamos sitios web, apps Android y sistemas de gestión que resuelven problemas reales: vender, facturar, organizar y llegar a más clientes.",
+    "ubicacion": { "localidad": "Santa Ana", "region": "Santa Ana", "pais": "SV" },
+    "areaServida": ["El Salvador", "Centroamérica"]
   },
   "footer": {
     "tituloContacto": "Contacto",
     "tituloExplorar": "Explorar",
     "explorar": [
-      { "label": "Servicios", "href": "#servicios" },
-      { "label": "Proyectos", "href": "#proyectos" },
-      { "label": "Cotizar", "href": "#cotizar" }
+      { "label": "Servicios", "href": "/#servicios" },
+      { "label": "Proyectos", "href": "/#proyectos" },
+      { "label": "Cotizar", "href": "/#cotizar" }
     ],
     "derechos": "Nexbytes. Todos los derechos reservados.",
     "codigo": "com.nexbytes"
+  },
+  "noEncontrada": {
+    "codigo": "404",
+    "titulo": "Esta página no existe",
+    "texto": "Puede que el enlace esté mal escrito o que la página se haya movido. Vuelve al inicio para ver nuestros servicios y proyectos.",
+    "boton": { "label": "Volver al inicio", "href": "/" }
   }
 }

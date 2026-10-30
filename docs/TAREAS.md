@@ -118,7 +118,7 @@ Todas viven en `src/components/sections/`, reciben sus datos de `content.ts` des
 - Manejo de error visible en la UI ("No pudimos enviar, escríbenos por WhatsApp" con link).
 - (No se hizo: sin Cloud Functions; el aviso llega por WhatsApp.) Opcional, requiere el plan Blaze: Cloud Function `onDocumentCreated('cotizaciones/{id}')` que avise por correo o Telegram.
 
-### [ ] T12. SEO, rendimiento y accesibilidad
+### [x] T12. SEO, rendimiento y accesibilidad
 - Meta y Open Graph desde `site.seo`, `@astrojs/sitemap`, `robots.txt`, favicon con el logo, página 404 con el mismo estilo.
 - Datos estructurados JSON-LD tipo `Organization` / `ProfessionalService`.
 - Lighthouse móvil con 95 o más en Performance, Accessibility, Best Practices y SEO. Corregir lo que falte.

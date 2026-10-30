@@ -18,16 +18,16 @@ const { tarjeta } = hero;
 <section id="inicio" class="hero container" aria-labelledby="hero-titulo" data-anim-scope="hero">
   <div class="copy">
     <span class="eyebrow" data-anim="fade-up" data-anim-delay="0">{hero.eyebrow}</span>
-    <h1 id="hero-titulo" data-anim="split-words" data-anim-delay="0.1">{hero.titulo}</h1>
-    <p class="subtitulo" data-anim="fade-up" data-anim-delay="0.45">{hero.subtitulo}</p>
-    <div class="ctas" data-anim="fade-up" data-anim-delay="0.6">
+    <h1 id="hero-titulo" data-anim="split-words" data-anim-delay="0.05">{hero.titulo}</h1>
+    <p class="subtitulo" data-anim="rise" data-anim-delay="0.1">{hero.subtitulo}</p>
+    <div class="ctas" data-anim="fade-up" data-anim-delay="0.2">
       <Button href={hero.ctaPrimario.href} size="lg">{hero.ctaPrimario.label}</Button>
       <Button href={hero.ctaSecundario.href} size="lg" variant="ghost">{hero.ctaSecundario.label}</Button>
     </div>
   </div>
 
   <div class="visual">
-    <div class="card" data-anim="draw-border" data-anim-delay="0.25">
+    <div class="card" data-anim="draw-border" data-anim-delay="0.1">
       <svg class="outline" data-anim-part="outline" aria-hidden="true" focusable="false">
         <!-- rx = --radius-lg (14px) menos medio trazo. El tamaño lo pone animations.ts. -->
         <rect
@@ -60,7 +60,7 @@ const { tarjeta } = hero;
     <ul role="list" class="chips">
       {
         hero.chips.map((chip, i) => (
-          <li data-anim="fade-up" data-anim-delay={String(1.1 + i * 0.1)}>
+          <li data-anim="fade-up" data-anim-delay={String(0.5 + i * 0.08)}>
             <span class="chip-numero">{chip.numero}</span>
             <span>{chip.label}</span>
           </li>

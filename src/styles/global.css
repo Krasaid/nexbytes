@@ -107,9 +107,15 @@ textarea:focus-visible {
    Solo aplican con la clase .anim, que pone un script inline cuando hay JS y no
    hay movimiento reducido. Sin JS (o si animations.ts falla) todo se ve. */
 .anim [data-anim='fade-up'],
-.anim [data-anim='split-words'],
 .anim [data-anim='draw-border'] {
   opacity: 0;
+}
+
+/* Título y subtítulo del hero: visibles desde el primer pintado (son el LCP),
+   solo empiezan un poco más abajo y suben. */
+.anim [data-anim='split-words'],
+.anim [data-anim='rise'] {
+  transform: translateY(16px);
 }
 
 .anim [data-anim='draw-line'] {

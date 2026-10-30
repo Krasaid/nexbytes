@@ -1,0 +1,97 @@
+---
+import Base from '../layouts/Base.astro';
+import Nav from '../components/sections/Nav.astro';
+import Footer from '../components/sections/Footer.astro';
+import Button from '../components/ui/Button.astro';
+import Logo from '../components/ui/Logo.astro';
+import { getSite } from '../lib/content';
+
+const site = await getSite();
+const { noEncontrada } = site;
+---
+
+<Base
+  title={`${noEncontrada.titulo} — ${site.nombre}`}
+  description={noEncontrada.texto}
+  siteName={site.nombre}
+  noindex
+>
+  <Nav site={site} />
+  <main id="contenido" class="container no-encontrada">
+    <div class="card">
+      <span class="corner corner-tl" aria-hidden="true"></span>
+      <span class="corner corner-br" aria-hidden="true"></span>
+      <Logo size={48} />
+      <span class="codigo">{noEncontrada.codigo}</span>
+      <h1>{noEncontrada.titulo}</h1>
+      <p>{noEncontrada.texto}</p>
+      <Button href={noEncontrada.boton.href} size="lg">{noEncontrada.boton.label}</Button>
+    </div>
+  </main>
+  <Footer site={site} />
+</Base>
+
+<style>
+  .no-encontrada {
+    display: grid;
+    place-items: center;
+    min-height: calc(100vh - var(--nav-height));
+    padding-block: var(--section-pad);
+  }
+
+  .card {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--space-5);
+    width: 100%;
+    max-width: 640px;
+    padding: clamp(var(--space-7), 6vw, var(--space-12));
+    background: var(--bg-alt);
+    border: 1px solid var(--gold);
+    border-radius: var(--radius-lg);
+  }
+
+  .corner {
+    position: absolute;
+    width: 18px;
+    height: 18px;
+    border-color: var(--gold);
+    border-style: solid;
+    border-width: 0;
+  }
+
+  .corner-tl {
+    top: 10px;
+    left: 10px;
+    border-top-width: 1px;
+    border-left-width: 1px;
+  }
+
+  .corner-br {
+    right: 10px;
+    bottom: 10px;
+    border-right-width: 1px;
+    border-bottom-width: 1px;
+  }
+
+  .codigo {
+    font-family: var(--font-mono);
+    font-size: var(--text-sm);
+    letter-spacing: var(--tracking-eyebrow);
+    color: var(--gold);
+  }
+
+  h1 {
+    font-size: var(--text-h2);
+    line-height: 1.12;
+    letter-spacing: -0.01em;
+  }
+
+  p {
+    font-size: var(--text-lg);
+    line-height: 1.6;
+    color: var(--muted);
+  }
+</style>

@@ -68,7 +68,17 @@ export const siteSchema = z.object({
   seo: z.object({
     titulo: texto,
     descripcion: texto,
+    /** Imagen para compartir en redes (Open Graph): ideal 1200×630. */
     imagenOg: imagenSchema.optional(),
+    /** Dirección para los datos estructurados (JSON-LD) que lee Google. */
+    ubicacion: z.object({
+      localidad: texto,
+      region: texto.optional(),
+      /** Código ISO de 2 letras, por ejemplo "SV". */
+      pais: z.string().regex(/^[A-Z]{2}$/, 'Usa el código de 2 letras en mayúscula, por ejemplo "SV"'),
+    }),
+    /** Zonas que atiende, por ejemplo ["El Salvador", "Centroamérica"]. */
+    areaServida: z.array(texto).optional(),
   }),
   footer: z.object({
     tituloContacto: texto,
@@ -76,6 +86,13 @@ export const siteSchema = z.object({
     explorar: z.array(linkSchema).min(1),
     derechos: texto,
     codigo: texto,
+  }),
+  /** Página 404. */
+  noEncontrada: z.object({
+    codigo: texto,
+    titulo: texto,
+    texto: texto,
+    boton: linkSchema,
   }),
 });
 
