@@ -64,20 +64,27 @@ Cada campo de imagen del panel (imagen para compartir, capturas de proyectos, fo
 - **Reglas de Firestore**: se publican aparte con `npm run deploy:rules`. El público solo puede crear en `cotizaciones` y `lista_espera`; ahí el admin solo puede leer y cambiar `estado` y `notas`. El contenido del CMS (`borradores`, `publicado`) y `publicaciones` son solo del admin.
 - **App Check (reCAPTCHA v3)**: no actives el *enforcement* de Firestore hasta ver en la consola (App Check → Firestore) que las solicitudes llegan verificadas. Para desarrollo local, registra el token de depuración que imprime la consola del navegador con `npm run dev` (App Check → Apps → Administrar tokens de depuración).
 
-### Publicar contenido a mano (mientras GitHub Actions está pausado)
+### Publicar contenido (mientras GitHub Actions está pausado)
 
-GitHub Actions no arranca por un bloqueo de facturación de la cuenta, así que el workflow está desactivado. Hasta que el botón Publicar del admin (T22) funcione, se publica desde la terminal, con la cuenta de servicio de `GOOGLE_APPLICATION_CREDENTIALS` en `.env`:
+GitHub Actions no arranca por un bloqueo de facturación de la cuenta, así que el workflow está desactivado y el sitio se construye desde la terminal, con la cuenta de servicio de `GOOGLE_APPLICATION_CREDENTIALS` en `.env`. El flujo:
 
-```powershell
-npm run deploy:cms:preview   # vista previa con los borradores (canal "preview", 7 días); la URL sale al final
-npm run deploy:cms           # producción con lo publicado
-```
+1. **Guardar** en el panel (`/admin`): los cambios quedan en los borradores.
+2. **Revisar** con una vista previa construida desde los borradores:
 
-El panel también tiene la página **Publicar**: "Publicar" copia los borradores con cambios a lo publicado y pide el despliegue; "Vista previa", solo el despliegue con los borradores. Mientras Actions esté pausado, el panel avisa "Publicación automática no configurada" y dice qué comando correr; con "Publicar", los cambios ya quedan en lo publicado, así que basta `npm run deploy:cms`.
+   ```powershell
+   npm run deploy:cms:preview   # canal "preview" (7 días); la URL sale al final
+   ```
 
-Ojo: `npm run deploy` (sin `:cms`) construye con los JSON locales, no con Firestore. El contenido que se haya editado en el CMS se pisa en producción con lo que tengan los JSON.
+3. **Publicar** en el panel (página Publicar → botón Publicar): copia los borradores con cambios a lo publicado. Como no hay publicación automática, el panel avisa "Publicación automática no configurada"; es lo esperado.
+4. **Desplegar** lo publicado:
 
-Cuando se resuelva la facturación: `gh workflow enable deploy.yml` y la prueba de abajo.
+   ```powershell
+   npm run deploy:cms           # producción, desde lo publicado
+   ```
+
+Ojo: `npm run deploy` (sin `:cms`) construye con los JSON locales, no con Firestore: pisaría en producción lo editado en el panel.
+
+Cuando se resuelva la facturación: `gh workflow enable deploy.yml`. Desde entonces, los botones Vista previa y Publicar del panel disparan el despliegue solos y los pasos 2 y 4 dejan de hacer falta.
 
 ### Despliegue automático (GitHub Actions)
 

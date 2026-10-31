@@ -1,0 +1,12 @@
+# Generado o de terceros: no se formatea.
+dist/
+.astro/
+.firebase/
+.wrangler/
+node_modules/
+test-results/
+playwright-report/
+package-lock.json
+workers/*/worker-configuration.d.ts
+# Copia del mockup original (referencia visual, no código del proyecto).
+docs/mockup/
