@@ -148,7 +148,8 @@ export const textos = {
         sinWebp: 'Este navegador no puede convertir imágenes a WebP. Usa Chrome, Edge o Firefox.',
         sinApi: 'Falta configurar PUBLIC_API_URL (la URL del Worker).',
         sesion: 'La sesión venció. Vuelve a iniciar sesión.',
-        red: 'No hay conexión con el servidor de imágenes.',
+        // El navegador no deja distinguir un corte de red de un origen que el Worker no acepta (CORS).
+        red: 'No se pudo contactar al servidor de imágenes. Revisa tu conexión y abre el admin desde http://localhost:4321 o el sitio publicado.',
         servidor: (estado: number) => `El servidor no pudo guardar la imagen (HTTP ${estado}).`,
         usos: 'No se pudo comprobar dónde se usa la imagen. Intenta de nuevo.',
       },

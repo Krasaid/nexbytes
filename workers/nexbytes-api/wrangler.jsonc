@@ -10,7 +10,8 @@
   "r2_buckets": [{ "binding": "BUCKET", "bucket_name": "nexbytes" }],
   "vars": {
     "FIREBASE_PROJECT_ID": "nexbytes",
-    // Separados por coma; * vale por un tramo de letras, números y guiones (canales de preview).
-    "ALLOWED_ORIGINS": "http://localhost:4321,https://nexbytes1.web.app,https://nexbytes1--*.web.app"
+    // Separados por coma; * vale por un tramo de letras, números y guiones: el puerto en
+    // desarrollo (localhost y 127.0.0.1, solo existen en la propia máquina) y los canales de preview.
+    "ALLOWED_ORIGINS": "http://localhost:*,http://127.0.0.1:*,https://nexbytes1.web.app,https://nexbytes1.firebaseapp.com,https://nexbytes1--*.web.app"
   }
 }

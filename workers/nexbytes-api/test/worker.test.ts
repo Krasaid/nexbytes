@@ -41,7 +41,7 @@ async function token(cambios: { sub?: string; aud?: string; iss?: string; exp?: 
 const entorno = (extra: Partial<Env> = {}): Env => ({
   BUCKET: env.BUCKET,
   FIREBASE_PROJECT_ID: PROYECTO,
-  ALLOWED_ORIGINS: 'http://localhost:4321,https://nexbytes1.web.app,https://nexbytes1--*.web.app',
+  ALLOWED_ORIGINS: env.ALLOWED_ORIGINS, // el mismo valor de wrangler.jsonc
   ADMIN_UID: ADMIN,
   ...extra,
 });
@@ -269,7 +269,14 @@ describe('CORS y rutas', () => {
     );
 
   it('preflight de un origen permitido, incluidos los canales de preview', async () => {
-    for (const origen of ['http://localhost:4321', 'https://nexbytes1.web.app', 'https://nexbytes1--preview-x7k2.web.app']) {
+    for (const origen of [
+      'http://localhost:4321',
+      'http://localhost:4322', // Astro cambia de puerto si el 4321 está ocupado
+      'http://127.0.0.1:4321',
+      'https://nexbytes1.web.app',
+      'https://nexbytes1.firebaseapp.com',
+      'https://nexbytes1--preview-x7k2.web.app',
+    ]) {
       const r = await pedir({ method: 'OPTIONS', origen });
       expect(r.status).toBe(204);
       expect(r.headers.get('Access-Control-Allow-Origin')).toBe(origen);
@@ -279,7 +286,15 @@ describe('CORS y rutas', () => {
   });
 
   it('otros orígenes: 403 sin cabeceras CORS', async () => {
-    for (const origen of ['https://evil.example', 'https://nexbytes1.web.app.evil.example', 'https://nexbytes1--x.web.app.evil', 'https://otro--x.web.app']) {
+    for (const origen of [
+      'https://evil.example',
+      'https://nexbytes1.web.app.evil.example',
+      'https://nexbytes1--x.web.app.evil',
+      'https://otro--x.web.app',
+      'http://localhost.evil.example:4321',
+      'https://localhost:4321', // solo http en local
+      'http://192.168.1.10:4321',
+    ]) {
       const r = await pedir({ method: 'OPTIONS', origen });
       expect(r.status).toBe(403);
       expect(r.headers.get('Access-Control-Allow-Origin')).toBeNull();

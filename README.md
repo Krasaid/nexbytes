@@ -166,7 +166,7 @@ Si agregas un script `is:inline`, su hash no se calcula solo. Agrégalo con `Ast
 | `DELETE /upload` | JSON `{ path }`. Solo rutas dentro de esos prefijos. `204`. |
 | `POST /publish` | JSON `{ publicacionId, tipo }` → `repository_dispatch` "publicar" en GitHub. Sin `GITHUB_TOKEN` responde `503 { error: "Publicación automática no configurada" }`. |
 
-CORS: `http://localhost:4321`, `https://nexbytes1.web.app` y los canales de preview `https://nexbytes1--*.web.app` (`ALLOWED_ORIGINS` en `wrangler.jsonc`). Otro origen recibe `403`.
+CORS: `http://localhost` y `http://127.0.0.1` en cualquier puerto (desarrollo), `https://nexbytes1.web.app`, `https://nexbytes1.firebaseapp.com` y los canales de preview `https://nexbytes1--*.web.app` (`ALLOWED_ORIGINS` en `wrangler.jsonc`). Otro origen recibe `403`, y el navegador lo muestra como un fallo de red.
 
 ### Pruebas y desarrollo local
 
