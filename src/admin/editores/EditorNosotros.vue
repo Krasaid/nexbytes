@@ -22,7 +22,7 @@ const t = textos.bloquesEditor.nosotros;
     </Seccion>
     <Seccion id="foto" :titulo="t.foto">
       <!-- ImageField trae el texto alternativo junto a la foto. -->
-      <ImageField ruta="foto" :etiqueta="t.foto" />
+      <ImageField ruta="foto" :etiqueta="t.foto" prefijo="nosotros" nombre="foto" />
       <TextField class="ancho" ruta="sinFoto" :etiqueta="t.sinFoto" />
     </Seccion>
   </EditorBloque>

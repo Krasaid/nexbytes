@@ -126,7 +126,7 @@ Landing ─────────┘ HTML estático (sin cambios para el visit
 - `DELETE /upload`: borra una ruta (solo dentro de los prefijos permitidos).
 - Pruebas con el runner de Vitest para Workers. README con `wrangler deploy` y cómo cargar los secretos.
 
-### [ ] T21. Subida de imágenes desde el admin
+### [x] T21. Subida de imágenes desde el admin
 - `ImageField` completo: elegir o arrastrar archivo → redimensionar en el navegador (lado mayor 1600 px; la imagen OG exactamente 1200×630 con recorte centrado) → convertir a WebP (calidad ~0.82) → subir al Worker con el ID token → guardar la ruta en el campo.
 - Muestra progreso, vista previa, peso final y botón para quitar. Al quitar, solo se borra la referencia del campo; borrar en R2 es un botón aparte, con confirmación.
 - Campo de texto alternativo (`alt`) obligatorio junto a cada imagen. Agrégalo a los schemas donde haga falta.

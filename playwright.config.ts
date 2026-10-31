@@ -32,6 +32,8 @@ export default defineConfig({
       PUBLIC_FIRESTORE_EMULATOR: '127.0.0.1:8080',
       // Las "imágenes de R2" de las pruebas salen de public/ del propio servidor.
       PUBLIC_CDN_URL: `http://127.0.0.1:${PUERTO}`,
+      // El Worker se simula en las pruebas con page.route (tests/e2e/imagenes.spec.ts).
+      PUBLIC_API_URL: `http://127.0.0.1:${PUERTO}/api-simulada`,
       CONTENT_SOURCE: 'local',
     },
   },

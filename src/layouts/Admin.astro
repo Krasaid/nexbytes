@@ -10,11 +10,24 @@ import '../styles/global.css';
 import '../admin/admin.css';
 import { textos } from '../admin/textos';
 
-// Solo esta página: Firebase Auth (inicio de sesión y renovación del token).
-// Astro lo suma al connect-src de astro.config.mjs; el de las demás páginas no cambia.
+// CSP solo de esta página; Astro la suma a la de astro.config.mjs y las demás páginas no cambian.
+// Los orígenes salen de las variables de entorno, no se escriben a mano.
+const origen = (url: string | undefined) => {
+  try {
+    return url ? new URL(url).origin : '';
+  } catch {
+    return '';
+  }
+};
+const api = origen(import.meta.env.PUBLIC_API_URL); // Worker: subir y borrar imágenes, publicar
+const cdnOrigen = origen(import.meta.env.PUBLIC_CDN_URL); // R2: las imágenes guardadas
+
+// Firebase Auth (inicio de sesión y renovación del token) y el Worker.
 Astro.csp?.insertDirective(
-  'connect-src https://identitytoolkit.googleapis.com https://securetoken.googleapis.com',
+  `connect-src https://identitytoolkit.googleapis.com https://securetoken.googleapis.com${api ? ` ${api}` : ''}`,
 );
+// R2 y blob: (la vista previa de la imagen procesada antes de subirla).
+Astro.csp?.insertDirective(`img-src blob:${cdnOrigen ? ` ${cdnOrigen}` : ''}`);
 ---
 
 <!doctype html>

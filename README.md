@@ -47,6 +47,14 @@ Se entra con la cuenta de correo y contraseña de administración (la del UID de
 
 Para probarlo en local sin tocar el proyecto real, `npm run test:e2e` levanta los emuladores, crea las cuentas de prueba y recorre el panel (login, sin acceso, recarga, menú móvil y teclado).
 
+### Imágenes
+
+Cada campo de imagen del panel (imagen para compartir, capturas de proyectos, foto de Nosotros) acepta arrastrar y soltar o elegir un archivo. La imagen se prepara en el navegador antes de subirla: se respeta la orientación de las fotos del celular, se reduce a 1600 px de lado mayor (la imagen para compartir se recorta al centro a 1200 × 630, y se ve el recorte antes de subir), se convierte a WebP y **se le quitan los metadatos EXIF, incluida la ubicación GPS**. Las fotos HEIC del iPhone no se pueden leer en Chrome: conviértelas a JPG o PNG primero.
+
+- **Quitar** solo saca la imagen del campo; el archivo sigue en R2.
+- **Borrar del almacenamiento** elimina el archivo de R2, y solo si ningún otro bloque del borrador ni el sitio publicado lo usa.
+- El texto alternativo es obligatorio: sin él no se puede guardar.
+
 ## Despliegue
 
 - **Hosting** (`firebase.json`): sitio `nexbytes1`, carpeta `dist/`.

@@ -38,7 +38,8 @@ export const imagenSchema = z.object({
   src: texto.refine((s) => !/^https?:\/\//.test(s) && !s.startsWith('/'), {
     message: 'Debe ser una ruta relativa dentro del bucket, por ejemplo "proyectos/foto.webp"',
   }),
-  alt: z.string(),
+  /** Texto alternativo: obligatorio (accesibilidad y SEO). */
+  alt: texto,
   width: z.number().int().positive(),
   height: z.number().int().positive(),
 });

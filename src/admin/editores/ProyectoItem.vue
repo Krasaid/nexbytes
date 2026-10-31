@@ -60,5 +60,10 @@ const avisoSlug = computed(() =>
   <UrlField :ruta="`${ruta}.url`" :etiqueta="t.url" />
   <TextArea class="ancho" :ruta="`${ruta}.resumen`" :etiqueta="t.resumen" />
   <TagsField :ruta="`${ruta}.stack`" :etiqueta="t.stack" :elemento="t.stackElemento" />
-  <ImageField :ruta="`${ruta}.imagen`" :etiqueta="t.imagen" />
+  <ImageField
+    :ruta="`${ruta}.imagen`"
+    :etiqueta="t.imagen"
+    prefijo="proyectos"
+    :nombre="(slug.valor.value as string | undefined) ?? ''"
+  />
 </template>

@@ -177,7 +177,7 @@ test('imagen, select y opcionales: vista previa con cdn(), quitar con confirmaci
   // Quitar la imagen pide confirmación y solo quita la referencia.
   await imagen.getByRole('button', { name: textos.campos.imagen.quitar }).click();
   await dialogo(page).getByRole('button', { name: textos.confirmar.quitarImagen.accion }).click();
-  await expect(imagen.getByText(textos.campos.imagen.sinImagen)).toBeVisible();
+  await expect(imagen.getByText(textos.campos.imagen.soltar)).toBeVisible(); // vuelve la zona para soltar
 
   // País con el select; la región es opcional: vacía, se quita del documento.
   await page.getByLabel(t.site.pais).selectOption({ label: 'Guatemala' });

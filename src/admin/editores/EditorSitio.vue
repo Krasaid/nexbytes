@@ -54,7 +54,7 @@ const enlaceNuevo = () => ({ label: '', href: '' });
         :ayuda="t.seoDescripcionAyuda"
         :recomendado="LARGOS_SEO.descripcion.recomendado"
       />
-      <ImageField ruta="seo.imagenOg" :etiqueta="t.imagenOg" :ayuda="t.imagenOgAyuda" />
+      <ImageField ruta="seo.imagenOg" :etiqueta="t.imagenOg" :ayuda="t.imagenOgAyuda" prefijo="seo" modo="og" nombre="og" />
       <fieldset class="grupo">
         <legend>{{ t.ubicacion }}</legend>
         <div class="grupo-campos">

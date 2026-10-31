@@ -25,6 +25,8 @@ import { erroresPorRuta, escribir, esquemaEn, idDe, leer, limitesDe, type Limite
 
 export interface Formulario {
   schema: z.ZodType;
+  /** Bloque que se edita (borradores/{bloque}). */
+  bloque?: string;
   datos: Ref<Record<string, unknown>>;
   /** Todos los errores actuales, por ruta (se muestren o no). */
   errores: ComputedRef<Map<string, string>>;
@@ -40,7 +42,7 @@ export interface Formulario {
 
 const CLAVE: InjectionKey<Formulario> = Symbol('formulario');
 
-export function crearFormulario(schema: z.ZodType, datos: Ref<Record<string, unknown>>): Formulario {
+export function crearFormulario(schema: z.ZodType, datos: Ref<Record<string, unknown>>, bloque?: string): Formulario {
   const intentado = ref(false);
   const tocados = reactive(new Set<string>());
   const validacion = computed(() => schema.safeParse(datos.value));
@@ -50,6 +52,7 @@ export function crearFormulario(schema: z.ZodType, datos: Ref<Record<string, unk
 
   return {
     schema,
+    bloque,
     datos,
     errores,
     intentado,
@@ -92,6 +95,9 @@ export function useCampo(ruta: MaybeRefOrGetter<string>) {
     tocar: () => formulario.tocar(r.value),
     /** Error de una ruta hija (por ejemplo `imagenOg.src`), para campos compuestos. */
     errorDe: (hija: string) => formulario.error(`${r.value}.${hija}`),
+    /** Bloque que se edita y su contenido actual (con lo no guardado). */
+    bloque: formulario.bloque,
+    datos: formulario.datos,
   };
 }
 

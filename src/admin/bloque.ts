@@ -44,7 +44,7 @@ export function useBloque(nombre: Bloque, ajustes: Ajustes = {}) {
     conflicto: false,
   });
 
-  const formulario = crearFormulario(schema, datos);
+  const formulario = crearFormulario(schema, datos, nombre);
   proveerFormulario(formulario);
 
   const sucio = computed(() => estado.fase === 'listo' && JSON.stringify(datos.value) !== original.value);
