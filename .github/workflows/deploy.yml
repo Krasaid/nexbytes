@@ -4,7 +4,7 @@
 #   - repository_dispatch "publicar" (lo manda el Worker al pulsar Publicar o Vista previa en el admin),
 #     payload { publicacionId, tipo: produccion | preview };
 #   - workflow_dispatch (manual, desde GitHub o con `gh workflow run deploy.yml`);
-#   - push a main (siempre producción).
+#   - push a main (siempre producción; no corre si el push solo cambia documentación).
 #
 # produccion → CONTENT_SOURCE=firestore            → firebase deploy --only hosting
 # preview    → CONTENT_SOURCE=firestore-borradores → canal de preview "preview" (vence en 7 días)
@@ -30,6 +30,9 @@ on:
         required: false
   push:
     branches: [main]
+    paths-ignore:
+      - '**.md'
+      - 'docs/**'
 
 permissions:
   contents: read
