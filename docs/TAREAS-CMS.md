@@ -145,7 +145,7 @@ Landing ─────────┘ HTML estático (sin cambios para el visit
 
 ## Fase 4d: Bandeja y cierre
 
-### [ ] T23. Bandeja de cotizaciones y lista de espera
+### [x] T23. Bandeja de cotizaciones y lista de espera
 - **Cotizaciones:** tabla o lista ordenada por fecha, filtro por estado, búsqueda por `ref` o nombre y contador de nuevas en la barra lateral.
 - Detalle de cada cotización: todos los campos, cambio de estado (nuevo → contactado → propuesta → ganado/perdido), notas internas y botón **"Escribir por WhatsApp"** con el número del cliente (`wa.me`) y un saludo que incluya el `ref`.
 - **Lista de espera:** lista, cambio de estado (nuevo/invitado/baja) y exportar a CSV.

@@ -10,16 +10,16 @@ import { hayCambiosSinGuardar } from './bloque';
 import { confirmar } from './confirmar';
 import { textos } from './textos';
 import Contenido from './vistas/Contenido.vue';
+import Cotizacion from './vistas/Cotizacion.vue';
+import Cotizaciones from './vistas/Cotizaciones.vue';
 import Inicio from './vistas/Inicio.vue';
-import Pendiente from './vistas/Pendiente.vue';
+import ListaEspera from './vistas/ListaEspera.vue';
 import Publicar from './vistas/Publicar.vue';
 
 declare module 'vue-router' {
   interface RouteMeta {
     /** Título de la página (h1 y pestaña). */
     titulo: (ruta: RouteLocationNormalized) => string;
-    /** Tarea de docs/TAREAS-CMS.md que implementa la vista, mientras sea un marcador. */
-    tarea?: string;
   }
 }
 
@@ -37,14 +37,20 @@ export const router = createRouter({
     {
       path: '/bandeja/cotizaciones',
       name: 'cotizaciones',
-      component: Pendiente,
-      meta: { titulo: () => textos.shell.cotizaciones, tarea: 'T23' },
+      component: Cotizaciones,
+      meta: { titulo: () => textos.shell.cotizaciones },
+    },
+    {
+      path: '/bandeja/cotizaciones/:id',
+      name: 'cotizacion',
+      component: Cotizacion,
+      meta: { titulo: () => textos.shell.cotizaciones },
     },
     {
       path: '/bandeja/lista-espera',
       name: 'lista-espera',
-      component: Pendiente,
-      meta: { titulo: () => textos.shell.listaEspera, tarea: 'T23' },
+      component: ListaEspera,
+      meta: { titulo: () => textos.shell.listaEspera },
     },
     { path: '/publicar', name: 'publicar', component: Publicar, meta: { titulo: () => textos.shell.publicar } },
     { path: '/:pathMatch(.*)*', redirect: { name: 'inicio' } },

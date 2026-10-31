@@ -55,6 +55,12 @@ Cada campo de imagen del panel (imagen para compartir, capturas de proyectos, fo
 - **Borrar del almacenamiento** elimina el archivo de R2, y solo si ningún otro bloque del borrador ni el sitio publicado lo usa.
 - El texto alternativo es obligatorio: sin él no se puede guardar.
 
+### Bandeja
+
+- **Cotizaciones:** lista de 20 en 20, de la más nueva a la más vieja, con filtro por estado y búsqueda por ref (`NX-AB12` o `AB12`) o por cómo empieza el nombre. Los filtros quedan en la URL. En cada cotización: todos los datos, el estado (se guarda al elegirlo), notas internas con su botón y los botones para escribir al cliente por WhatsApp (con un saludo que incluye el ref) o por correo.
+- **Lista de espera:** estado de cada registro y exportación a CSV (lo que muestra el filtro, con tildes que Excel lee bien).
+- Los filtros por estado necesitan índices compuestos de Firestore (`firestore.indexes.json`). No se despliegan con `npm run deploy:rules`; cuando quieras activarlos: `firebase deploy --only firestore:indexes`. Hasta entonces, filtrar por estado en producción muestra un aviso.
+
 ## Despliegue
 
 - **Hosting** (`firebase.json`): sitio `nexbytes1`, carpeta `dist/`.

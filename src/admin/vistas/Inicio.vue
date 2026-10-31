@@ -1,26 +1,17 @@
 <script setup lang="ts">
 import { onMounted, ref } from 'vue';
-import {
-  collection,
-  getCountFromServer,
-  getDocs,
-  limit,
-  orderBy,
-  query,
-  where,
-  type Timestamp,
-} from 'firebase/firestore';
+import { collection, getDocs, limit, orderBy, query, type Timestamp } from 'firebase/firestore';
 
 import { useCambios } from '../cambios';
 import { getServicios } from '../firebase';
+import { useNuevas } from '../nuevas';
 import { estadoVisible } from '../publicar';
 import { textos } from '../textos';
 
 const t = textos.inicio;
 const cambios = useCambios();
 
-const nuevas = ref<number | null>(null);
-const errorNuevas = ref(false);
+const nuevas = useNuevas();
 
 interface Publicacion {
   estado: string;
@@ -36,10 +27,6 @@ const fecha = new Intl.DateTimeFormat('es-SV', { dateStyle: 'medium', timeStyle:
 
 onMounted(async () => {
   const { db } = getServicios();
-
-  getCountFromServer(query(collection(db, 'cotizaciones'), where('estado', '==', 'nuevo')))
-    .then((snap) => (nuevas.value = snap.data().count))
-    .catch(() => (errorNuevas.value = true));
 
   getDocs(query(collection(db, 'publicaciones'), orderBy('solicitadaEn', 'desc'), limit(1)))
     .then((snap) => {
@@ -63,9 +50,9 @@ onMounted(async () => {
   <div class="tarjetas">
     <section class="tarjeta" aria-labelledby="inicio-cotizaciones">
       <h2 id="inicio-cotizaciones">{{ t.cotizacionesNuevas }}</h2>
-      <p v-if="errorNuevas" class="aviso">{{ t.error }}</p>
-      <p v-else-if="nuevas === null" class="tenue">{{ textos.cargando }}</p>
-      <p v-else class="cifra">{{ nuevas }}</p>
+      <p v-if="nuevas.error" class="aviso">{{ t.error }}</p>
+      <p v-else-if="!nuevas.listo" class="tenue">{{ textos.cargando }}</p>
+      <p v-else class="cifra">{{ nuevas.cantidad }}</p>
       <RouterLink :to="{ name: 'cotizaciones' }" class="enlace">{{ t.verBandeja }}</RouterLink>
     </section>
 

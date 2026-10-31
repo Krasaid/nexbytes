@@ -1,18 +1,21 @@
 <script setup lang="ts">
 import { nextTick, onBeforeUnmount, onMounted, ref } from 'vue';
-import { useRouter } from 'vue-router';
+import { useRoute, useRouter } from 'vue-router';
 
 import { NOMBRES_BLOQUES } from '../lib/bloques';
 import { hayCambiosSinGuardar } from './bloque';
 import { useCambios } from './cambios';
 import Confirmacion from './Confirmacion.vue';
 import { confirmar } from './confirmar';
+import { useNuevas } from './nuevas';
 import { useSesion } from './sesion';
 import { textos } from './textos';
 
 const t = textos.shell;
 const { estado, salir } = useSesion();
 const cambios = useCambios();
+const nuevas = useNuevas();
+const ruta = useRoute();
 const router = useRouter();
 
 // ── Menú móvil (en escritorio la barra lateral siempre se ve) ──
@@ -114,7 +117,15 @@ function saltarAlContenido() {
 
       <p class="titulo-grupo" id="nav-bandeja">{{ t.bandeja }}</p>
       <ul class="grupo" aria-labelledby="nav-bandeja">
-        <li><RouterLink :to="{ name: 'cotizaciones' }" active-class="activo">{{ t.cotizaciones }}</RouterLink></li>
+        <li>
+          <RouterLink :to="{ name: 'cotizaciones' }" active-class="activo" :class="{ activo: ruta.name === 'cotizacion' }">
+            {{ t.cotizaciones }}
+            <span v-if="nuevas.cantidad" class="contador-nuevas">
+              <span aria-hidden="true">{{ nuevas.cantidad }}</span>
+              <span class="sr-only">({{ textos.bandeja.nuevas(nuevas.cantidad) }})</span>
+            </span>
+          </RouterLink>
+        </li>
         <li><RouterLink :to="{ name: 'lista-espera' }" active-class="activo">{{ t.listaEspera }}</RouterLink></li>
       </ul>
 
@@ -321,6 +332,17 @@ function saltarAlContenido() {
   height: 8px;
   border-radius: var(--radius-full);
   background: var(--gold);
+}
+
+.contador-nuevas {
+  min-width: 22px;
+  padding: 1px var(--space-2);
+  background: var(--gold);
+  border-radius: var(--radius-full);
+  color: var(--on-gold);
+  font-size: var(--text-xs);
+  font-weight: 600;
+  text-align: center;
 }
 
 .usuario-movil {

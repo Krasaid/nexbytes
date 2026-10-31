@@ -3,6 +3,7 @@ import { watch } from 'vue';
 
 import { detenerCambios, iniciarCambios } from './cambios';
 import Login from './Login.vue';
+import { detenerNuevas, iniciarNuevas } from './nuevas';
 import { useSesion } from './sesion';
 import Shell from './Shell.vue';
 import { textos } from './textos';
@@ -12,7 +13,15 @@ const { estado } = useSesion();
 // Las escuchas de Firestore solo viven mientras hay sesión de admin.
 watch(
   () => estado.fase,
-  (fase) => (fase === 'dentro' ? iniciarCambios() : detenerCambios()),
+  (fase) => {
+    if (fase === 'dentro') {
+      iniciarCambios();
+      iniciarNuevas();
+    } else {
+      detenerCambios();
+      detenerNuevas();
+    }
+  },
   { immediate: true },
 );
 </script>
