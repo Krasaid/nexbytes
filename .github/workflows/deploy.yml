@@ -1,0 +1,201 @@
+# Despliegue de la landing a Firebase Hosting (T16, docs/TAREAS-CMS.md).
+#
+# Se dispara con:
+#   - repository_dispatch "publicar" (lo manda el Worker al pulsar Publicar o Vista previa en el admin),
+#     payload { publicacionId, tipo: produccion | preview };
+#   - workflow_dispatch (manual, desde GitHub o con `gh workflow run deploy.yml`);
+#   - push a main (siempre producción).
+#
+# produccion → CONTENT_SOURCE=firestore            → firebase deploy --only hosting
+# preview    → CONTENT_SOURCE=firestore-borradores → canal de preview "preview" (vence en 7 días)
+#
+# Si viene publicacionId, publicaciones/{id} pasa a construyendo → publicada (con la URL) o error.
+# Secretos y variables que necesita: README.md → "Despliegue automático (GitHub Actions)".
+
+name: Desplegar
+
+on:
+  repository_dispatch:
+    types: [publicar]
+  workflow_dispatch:
+    inputs:
+      tipo:
+        description: Destino
+        type: choice
+        options: [preview, produccion]
+        default: preview
+      publicacionId:
+        description: ID en publicaciones/ (opcional; se crea con node scripts/publicacion.mjs solicitar)
+        type: string
+        required: false
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+# `shell: bash` explícito activa pipefail: sin él, `npm run build | tee` escondería un build fallido.
+defaults:
+  run:
+    shell: bash
+
+# Un push y un "Publicar" nunca despliegan al mismo tiempo: el segundo espera.
+concurrency:
+  group: deploy
+  cancel-in-progress: false
+
+env:
+  # Misma versión que en local (firebase --version).
+  FIREBASE_TOOLS: firebase-tools@15.33.0
+  # URL pública de producción: la misma que `site` en astro.config.mjs.
+  URL_PRODUCCION: https://nexbytes1.web.app
+
+jobs:
+  desplegar:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      # Los valores del payload solo se usan como variables de entorno, nunca dentro de un script.
+      TIPO: ${{ github.event_name == 'push' && 'produccion' || github.event.client_payload.tipo || inputs.tipo }}
+      PUBLICACION_ID: ${{ github.event.client_payload.publicacionId || inputs.publicacionId }}
+
+    steps:
+      - name: Código
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Node
+        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: 24
+          cache: npm
+
+      - name: Cuenta de servicio
+        id: credencial
+        env:
+          FIREBASE_SERVICE_ACCOUNT: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
+        run: |
+          if [ -z "$FIREBASE_SERVICE_ACCOUNT" ]; then
+            echo "::error::Falta el secreto FIREBASE_SERVICE_ACCOUNT (ver README)."
+            exit 1
+          fi
+          ruta="$RUNNER_TEMP/firebase-sa.json"
+          ( umask 077 && printf '%s' "$FIREBASE_SERVICE_ACCOUNT" > "$ruta" )
+          # Sin mostrar el error de JSON.parse: incluiría un pedazo del contenido.
+          if ! node -e 'try { JSON.parse(require("fs").readFileSync(process.argv[1], "utf8")) } catch { process.exit(1) }' "$ruta"; then
+            echo "::error::FIREBASE_SERVICE_ACCOUNT no es un JSON válido."
+            exit 1
+          fi
+          echo "GOOGLE_APPLICATION_CREDENTIALS=$ruta" >> "$GITHUB_ENV"
+
+      - name: Revisar publicación
+        run: |
+          if [ -n "$PUBLICACION_ID" ]; then
+            if [[ ! "$PUBLICACION_ID" =~ ^[A-Za-z0-9_-]{1,64}$ ]]; then
+              echo "::error::publicacionId inválido."
+              exit 1
+            fi
+            # A partir de aquí el paso de error puede escribir en publicaciones/{id}.
+            echo "ID_OK=true" >> "$GITHUB_ENV"
+          fi
+
+      - name: Revisar configuración
+        id: config
+        env:
+          PUBLIC_CDN_URL: ${{ vars.PUBLIC_CDN_URL }}
+          PUBLIC_FIREBASE_API_KEY: ${{ vars.PUBLIC_FIREBASE_API_KEY }}
+          PUBLIC_FIREBASE_AUTH_DOMAIN: ${{ vars.PUBLIC_FIREBASE_AUTH_DOMAIN }}
+          PUBLIC_FIREBASE_PROJECT_ID: ${{ vars.PUBLIC_FIREBASE_PROJECT_ID }}
+          PUBLIC_FIREBASE_APP_ID: ${{ vars.PUBLIC_FIREBASE_APP_ID }}
+          PUBLIC_RECAPTCHA_SITE_KEY: ${{ vars.PUBLIC_RECAPTCHA_SITE_KEY }}
+        run: |
+          case "$TIPO" in
+            produccion) echo "CONTENT_SOURCE=firestore" >> "$GITHUB_ENV" ;;
+            preview) echo "CONTENT_SOURCE=firestore-borradores" >> "$GITHUB_ENV" ;;
+            *) echo "::error::tipo debe ser produccion o preview."; exit 1 ;;
+          esac
+
+          faltan=""
+          for v in PUBLIC_CDN_URL PUBLIC_FIREBASE_API_KEY PUBLIC_FIREBASE_AUTH_DOMAIN \
+                   PUBLIC_FIREBASE_PROJECT_ID PUBLIC_FIREBASE_APP_ID PUBLIC_RECAPTCHA_SITE_KEY; do
+            if [ -z "${!v}" ]; then faltan="$faltan $v"; fi
+          done
+          if [ -n "$faltan" ]; then
+            echo "::error::Faltan variables del repositorio:$faltan (ver README)."
+            exit 1
+          fi
+
+      - name: Marcar construyendo
+        if: env.ID_OK == 'true'
+        run: node scripts/publicacion.mjs construyendo "$PUBLICACION_ID"
+
+      - name: Dependencias
+        id: dependencias
+        run: npm ci
+
+      - name: Pruebas
+        id: pruebas
+        run: npm test
+
+      - name: Build
+        id: build
+        env:
+          PUBLIC_CDN_URL: ${{ vars.PUBLIC_CDN_URL }}
+          PUBLIC_FIREBASE_API_KEY: ${{ vars.PUBLIC_FIREBASE_API_KEY }}
+          PUBLIC_FIREBASE_AUTH_DOMAIN: ${{ vars.PUBLIC_FIREBASE_AUTH_DOMAIN }}
+          PUBLIC_FIREBASE_PROJECT_ID: ${{ vars.PUBLIC_FIREBASE_PROJECT_ID }}
+          PUBLIC_FIREBASE_APP_ID: ${{ vars.PUBLIC_FIREBASE_APP_ID }}
+          PUBLIC_RECAPTCHA_SITE_KEY: ${{ vars.PUBLIC_RECAPTCHA_SITE_KEY }}
+        # El log se guarda para resumir el motivo si falla (bloque inválido, bloques que faltan…).
+        run: npm run build 2>&1 | tee "$RUNNER_TEMP/build.log"
+
+      - name: Desplegar
+        id: deploy
+        run: |
+          if [ "$TIPO" = produccion ]; then
+            npx --yes "$FIREBASE_TOOLS" deploy --only hosting --non-interactive
+            url="$URL_PRODUCCION"
+          else
+            npx --yes "$FIREBASE_TOOLS" hosting:channel:deploy preview --expires 7d --non-interactive --json \
+              | tee "$RUNNER_TEMP/canal.json"
+            url=$(node -e '
+              const r = JSON.parse(require("fs").readFileSync(process.argv[1], "utf8"));
+              const sitio = Object.values(r.result ?? {})[0];
+              if (r.status !== "success" || !sitio?.url) process.exit(1);
+              console.log(sitio.url);
+            ' "$RUNNER_TEMP/canal.json")
+          fi
+          echo "url=$url" >> "$GITHUB_OUTPUT"
+          echo "Desplegado ($TIPO): $url" >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Marcar publicada
+        if: env.ID_OK == 'true'
+        env:
+          URL: ${{ steps.deploy.outputs.url }}
+        run: node scripts/publicacion.mjs publicada "$PUBLICACION_ID" "$URL"
+
+      - name: Marcar error
+        if: (failure() || cancelled()) && env.ID_OK == 'true' && env.GOOGLE_APPLICATION_CREDENTIALS != ''
+        env:
+          ESTADO_JOB: ${{ job.status }}
+          CONFIG: ${{ steps.config.outcome }}
+          DEPENDENCIAS: ${{ steps.dependencias.outcome }}
+          PRUEBAS: ${{ steps.pruebas.outcome }}
+          BUILD: ${{ steps.build.outcome }}
+          DEPLOY: ${{ steps.deploy.outcome }}
+        run: |
+          if [ "$ESTADO_JOB" = cancelled ]; then mensaje="El despliegue se canceló o superó el tiempo límite."
+          elif [ "$CONFIG" = failure ]; then mensaje="Falta configuración en GitHub (variables PUBLIC_* o tipo inválido)."
+          elif [ "$DEPENDENCIAS" = failure ]; then mensaje="No se pudieron instalar las dependencias."
+          elif [ "$PRUEBAS" = failure ]; then mensaje="Fallaron las pruebas automáticas."
+          elif [ "$BUILD" = failure ]; then mensaje="El build falló."
+          elif [ "$DEPLOY" = failure ]; then mensaje="No se pudo desplegar en Firebase Hosting."
+          else mensaje="El despliegue falló."
+          fi
+          node scripts/publicacion.mjs error "$PUBLICACION_ID" "$mensaje" --log "$RUNNER_TEMP/build.log" \
+            --enlace "$GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID"
+
+      - name: Borrar la cuenta de servicio
+        if: always()
+        run: rm -f "$RUNNER_TEMP/firebase-sa.json"

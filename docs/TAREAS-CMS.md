@@ -70,7 +70,7 @@ Landing ─────────┘ HTML estático (sin cambios para el visit
 
 **Listo cuando:** `CONTENT_SOURCE=firestore npm run build` genera exactamente el mismo HTML que con `local` (compáralo con un diff).
 
-### [ ] T16. Despliegue automático con GitHub Actions
+### [x] T16. Despliegue automático con GitHub Actions
 - Requiere el repo en GitHub (privado). Si no tiene remoto, pídeme crearlo.
 - `.github/workflows/deploy.yml`, que se dispara con:
   - `repository_dispatch` de tipo `publicar` (payload: `publicacionId`, `tipo`);
