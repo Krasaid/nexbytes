@@ -53,7 +53,7 @@ Variables de `.env` (ver `.env.example`):
 
 | Disparador | Contenido | Destino |
 | --- | --- | --- |
-| `push` a `main` | `publicado` | Producción |
+| `push` a `main` (salvo si solo cambia documentación: `*.md`, `docs/`) | `publicado` | Producción |
 | `repository_dispatch` `publicar` con `tipo: produccion` (botón **Publicar** del admin) | `publicado` | Producción |
 | `repository_dispatch` `publicar` con `tipo: preview` (botón **Vista previa**) | `borradores` | Canal `preview` (vence en 7 días) |
 | `workflow_dispatch` manual (`gh workflow run`) | según `tipo` | según `tipo` |
