@@ -70,7 +70,9 @@ Landing ─────────┘ HTML estático (sin cambios para el visit
 
 **Listo cuando:** `CONTENT_SOURCE=firestore npm run build` genera exactamente el mismo HTML que con `local` (compáralo con un diff).
 
-### [x] T16. Despliegue automático con GitHub Actions
+### [~] T16. Despliegue automático con GitHub Actions
+> Workflow escrito, sin verificar: Actions bloqueado por facturación de la cuenta. El workflow está desactivado (`gh workflow enable deploy.yml` para reactivarlo). Mientras tanto se publica a mano con `npm run deploy:cms` / `npm run deploy:cms:preview`.
+
 - Requiere el repo en GitHub (privado). Si no tiene remoto, pídeme crearlo.
 - `.github/workflows/deploy.yml`, que se dispara con:
   - `repository_dispatch` de tipo `publicar` (payload: `publicacionId`, `tipo`);

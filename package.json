@@ -16,6 +16,8 @@
     "emulators": "firebase emulators:start --only firestore",
     "deploy": "npm test && npm run build && firebase deploy --only hosting",
     "deploy:preview": "npm test && npm run build && firebase hosting:channel:deploy preview --expires 7d",
+    "deploy:cms": "node scripts/deploy-cms.mjs",
+    "deploy:cms:preview": "node scripts/deploy-cms.mjs --preview",
     "deploy:rules": "firebase deploy --only firestore:rules"
   },
   "dependencies": {

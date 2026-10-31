@@ -112,6 +112,7 @@ src/
 - `npm run emulators`: emulador de Firestore para probar los formularios en local (con `PUBLIC_FIRESTORE_EMULATOR` en `.env`)
 - `npm run deploy`: pruebas + build + publicar (`firebase deploy --only hosting`)
 - `npm run deploy:preview`: pruebas + build + canal de vista previa `preview` (vence en 7 días)
+- `npm run deploy:cms` / `npm run deploy:cms:preview`: publicar a mano desde Firestore (`publicado` → producción, `borradores` → canal `preview`) mientras Actions está pausado. `npm run deploy` usa los JSON locales
 - `npm run deploy:rules`: publicar las reglas de Firestore
 - En Windows el emulador de Hosting no aplica los `headers` de `firebase.json`; revísalos en el canal de preview con `curl -I <url>`
 

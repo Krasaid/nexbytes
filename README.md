@@ -36,6 +36,8 @@ Variables de `.env` (ver `.env.example`):
 | `npm run emulators` | Emulador de Firestore para probar formularios en local |
 | `npm run deploy:preview` | Pruebas + build + canal de vista previa `preview` (vence en 7 días) |
 | `npm run deploy` | Pruebas + build + publicar en producción |
+| `npm run deploy:cms` | Pruebas + build **desde Firestore** (`publicado`) + publicar en producción. Es el "Publicar" manual mientras GitHub Actions no corre |
+| `npm run deploy:cms:preview` | Igual, pero desde `borradores` y al canal `preview` (vence en 7 días) |
 | `npm run deploy:rules` | Publicar `firestore.rules` |
 
 ## Despliegue
@@ -46,6 +48,19 @@ Variables de `.env` (ver `.env.example`):
   - Headers de seguridad: `X-Content-Type-Options`, `Referrer-Policy`, `Permissions-Policy`, `X-Frame-Options` y `frame-ancestors 'none'`.
 - **Reglas de Firestore**: se publican aparte con `npm run deploy:rules`. El público solo puede crear en `cotizaciones` y `lista_espera`; ahí el admin solo puede leer y cambiar `estado` y `notas`. El contenido del CMS (`borradores`, `publicado`) y `publicaciones` son solo del admin.
 - **App Check (reCAPTCHA v3)**: no actives el *enforcement* de Firestore hasta ver en la consola (App Check → Firestore) que las solicitudes llegan verificadas. Para desarrollo local, registra el token de depuración que imprime la consola del navegador con `npm run dev` (App Check → Apps → Administrar tokens de depuración).
+
+### Publicar contenido a mano (mientras GitHub Actions está pausado)
+
+GitHub Actions no arranca por un bloqueo de facturación de la cuenta, así que el workflow está desactivado. Hasta que el botón Publicar del admin (T22) funcione, se publica desde la terminal, con la cuenta de servicio de `GOOGLE_APPLICATION_CREDENTIALS` en `.env`:
+
+```powershell
+npm run deploy:cms:preview   # vista previa con los borradores (canal "preview", 7 días); la URL sale al final
+npm run deploy:cms           # producción con lo publicado
+```
+
+Ojo: `npm run deploy` (sin `:cms`) construye con los JSON locales, no con Firestore. El contenido que se haya editado en el CMS se pisa en producción con lo que tengan los JSON.
+
+Cuando se resuelva la facturación: `gh workflow enable deploy.yml` y la prueba de abajo.
 
 ### Despliegue automático (GitHub Actions)
 
