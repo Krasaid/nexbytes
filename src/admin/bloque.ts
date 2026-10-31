@@ -8,6 +8,8 @@
  *   del conflicto en vez de pisar el trabajo ajeno.
  * - Mientras haya cambios sin guardar, el router y el cierre de sesión piden
  *   confirmación (`hayCambiosSinGuardar`) y el navegador avisa al cerrar o recargar.
+ * - `ajustes` (opcional) cambian el contenido al cargarlo (`alCargar`) y antes de
+ *   validarlo y guardarlo (`alGuardar`); por ejemplo, el orden de los proyectos.
  */
 import { computed, nextTick, onBeforeUnmount, onMounted, reactive, ref, watch } from 'vue';
 import { doc, getDoc, serverTimestamp, setDoc } from 'firebase/firestore';
@@ -18,10 +20,18 @@ import { crearFormulario, proveerFormulario } from './formulario';
 
 type Fase = 'cargando' | 'listo' | 'noExiste' | 'errorCarga';
 
+type Ajuste = (contenido: Record<string, unknown>) => Record<string, unknown>;
+export interface Ajustes {
+  alCargar?: Ajuste;
+  alGuardar?: Ajuste;
+}
+
 /** Hay un editor abierto con cambios sin guardar (lo consultan el router y el Shell). */
 export const hayCambiosSinGuardar = ref(false);
 
-export function useBloque(nombre: Bloque) {
+export function useBloque(nombre: Bloque, ajustes: Ajustes = {}) {
+  const alCargar = ajustes.alCargar ?? ((c) => c);
+  const alGuardar = ajustes.alGuardar ?? ((c) => c);
   const schema = BLOQUES[nombre];
   const datos = ref<Record<string, unknown>>({});
   const original = ref('');
@@ -46,7 +56,7 @@ export function useBloque(nombre: Bloque) {
   const referencia = () => doc(getServicios().db, 'borradores', nombre);
 
   function aplicar(contenido: Record<string, unknown>, version: number) {
-    datos.value = structuredClone(contenido);
+    datos.value = alCargar(structuredClone(contenido));
     original.value = JSON.stringify(datos.value);
     estado.version = version;
     estado.conflicto = false;
@@ -80,7 +90,8 @@ export function useBloque(nombre: Bloque) {
   async function guardar(): Promise<boolean> {
     if (estado.guardando) return false;
     formulario.intentado.value = true;
-    const resultado = schema.safeParse(datos.value);
+    // Copia plana (JSON) de lo editado: los datos del formulario son proxies reactivos.
+    const resultado = schema.safeParse(alGuardar(JSON.parse(JSON.stringify(datos.value))));
     if (!resultado.success) {
       await nextTick();
       enfocarPrimerError();

@@ -70,6 +70,29 @@ describe('TextField', () => {
     expect(formulario().datos.value).not.toHaveProperty('region');
   });
 
+  it('con largo recomendado: avisa al pasarlo, pero solo el máximo del schema es error', async () => {
+    const { wrapper, formulario } = montar(
+      TextField,
+      { ruta: 'titulo', etiqueta: 'Título', recomendado: 6 },
+      { titulo: 'Hola' },
+    );
+    const input = wrapper.get('input');
+    expect(wrapper.get('.contador').text()).toContain(textos.campos.contadorRecomendado(4, 6, 10));
+
+    await input.setValue('Hola mun'); // 8: pasa el recomendado, no el máximo
+    await input.trigger('blur');
+    const contador = wrapper.get('.contador');
+    expect(contador.classes()).toEqual(expect.arrayContaining(['sobre-recomendado']));
+    expect(contador.classes()).not.toContain('excedido');
+    expect(contador.text()).toContain(textos.campos.sobreRecomendado);
+    expect(formulario().errores.value.has('titulo')).toBe(false);
+    expect(input.attributes('aria-invalid')).toBeUndefined();
+
+    await input.setValue('Hola mundo!'); // 11: pasa el máximo
+    expect(wrapper.get('.contador').classes()).toContain('excedido');
+    expect(wrapper.get('.error').text()).toBe(textos.errores.maxCaracteres(10));
+  });
+
   it('sin máximo en el schema no hay contador', () => {
     const { wrapper } = montar(TextField, { ruta: 'region', etiqueta: 'Región' }, { region: 'x' });
     expect(wrapper.find('.contador').exists()).toBe(false);

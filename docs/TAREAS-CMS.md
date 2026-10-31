@@ -108,7 +108,7 @@ Landing ─────────┘ HTML estático (sin cambios para el visit
 - `useBloque(nombre)`: carga el borrador, mantiene el estado sucio, valida con zod, guarda con `version + 1` y avisa si al salir hay cambios sin guardar.
 - Editores de **Sitio** (incluye SEO e imagen OG) y **Hero**.
 
-### [ ] T19. Editores del resto de bloques
+### [x] T19. Editores del resto de bloques
 - **Servicios** (el ícono se elige de los nombres disponibles en `Icon.astro`, con vista previa), **Proyectos** (alta, edición, orden, visible/oculto y slug autogenerado y editable), **Proceso**, **Producto** (con el interruptor `visible` destacado), **Cotizador** (opciones de cada paso y `plantillaWhatsapp` con lista de marcadores disponibles y vista previa del mensaje armado con datos de ejemplo usando `buildQuoteMessage`) y **Nosotros**.
 - Vista previa en vivo opcional para Proyectos: renderiza la tarjeta con el mismo `ProyectoCard`, o una versión Vue equivalente si no es posible.
 

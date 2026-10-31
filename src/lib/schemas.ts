@@ -5,6 +5,7 @@
  */
 import { z } from 'zod';
 import { LIMITES } from './limites';
+import { MARCADORES, marcadoresDesconocidos } from './whatsapp';
 
 // Mensajes de validación en español.
 z.config(z.locales.es());
@@ -53,6 +54,15 @@ const campoSchema = z.object({
   placeholder: z.string(),
 });
 
+/**
+ * Largos del SEO. El máximo lo exige el schema; el recomendado (lo que Google
+ * suele mostrar sin cortar) solo lo avisa el contador del admin.
+ */
+export const LARGOS_SEO = {
+  titulo: { recomendado: 60, maximo: 70 },
+  descripcion: { recomendado: 155, maximo: 170 },
+} as const;
+
 // ── Bloques ──────────────────────────────────────────────────────────
 
 export const siteSchema = z.object({
@@ -66,8 +76,8 @@ export const siteSchema = z.object({
   ctaMenu: linkSchema,
   redes: z.array(z.object({ nombre: texto, url: z.url() })).optional(),
   seo: z.object({
-    titulo: texto,
-    descripcion: texto,
+    titulo: texto.max(LARGOS_SEO.titulo.maximo),
+    descripcion: texto.max(LARGOS_SEO.descripcion.maximo),
     /** Imagen para compartir en redes (Open Graph): ideal 1200×630. */
     imagenOg: imagenSchema.optional(),
     /** Dirección para los datos estructurados (JSON-LD) que lee Google. */
@@ -143,7 +153,16 @@ export const proyectosSchema = z.object({
     sinImagen: texto,
     verSitio: texto,
   }),
-  items: z.array(proyectoSchema),
+  /** El slug identifica al proyecto: no puede repetirse. */
+  items: z.array(proyectoSchema).superRefine((items, ctx) => {
+    const vistos = new Set<string>();
+    items.forEach((item, i) => {
+      if (vistos.has(item.slug)) {
+        ctx.addIssue({ code: 'custom', path: [i, 'slug'], message: 'Ya hay otro proyecto con este slug' });
+      }
+      vistos.add(item.slug);
+    });
+  }),
 });
 
 export const procesoSchema = z.object({
@@ -231,7 +250,16 @@ export const cotizadorSchema = z.object({
    * {plazo}, {presupuesto}, {nombre}, {negocio} e {idea}. Una línea por campo:
    * si el campo está vacío, su línea se omite. *texto* es negrita en WhatsApp.
    */
-  plantillaWhatsapp: texto,
+  plantillaWhatsapp: texto.superRefine((plantilla, ctx) => {
+    const desconocidos = marcadoresDesconocidos(plantilla);
+    if (desconocidos.length) {
+      const lista = (m: readonly string[]) => m.map((x) => `{${x}}`).join(', ');
+      ctx.addIssue({
+        code: 'custom',
+        message: `Marcadores que no existen: ${lista(desconocidos)}. Disponibles: ${lista(MARCADORES)}`,
+      });
+    }
+  }),
   resumen: z.object({
     titulo: texto,
     proyecto: texto,

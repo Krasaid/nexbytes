@@ -13,11 +13,23 @@ const props = defineProps<{
   ayuda?: string;
   error?: string;
   limites: Limites;
-  /** Largo actual, para el contador (solo si el schema tiene máximo). */
+  /** Largo actual, para el contador (si el schema tiene máximo o hay un largo recomendado). */
   largo?: number;
+  /** Largo recomendado: el contador lo avisa al pasarlo, pero no impide guardar. */
+  recomendado?: number;
 }>();
 
-const conContador = computed(() => props.limites.max !== undefined && props.largo !== undefined);
+const t = textos.campos;
+const conContador = computed(
+  () => props.largo !== undefined && (props.limites.max !== undefined || props.recomendado !== undefined),
+);
+const sobreRecomendado = computed(() => props.recomendado !== undefined && props.largo! > props.recomendado);
+const excedido = computed(() => props.limites.max !== undefined && props.largo! > props.limites.max);
+const contador = computed(() =>
+  props.recomendado !== undefined
+    ? { visible: t.contadorRecomendado(props.largo!, props.recomendado, props.limites.max), lector: t.contadorRecomendadoLector(props.largo!, props.recomendado, props.limites.max) }
+    : { visible: t.contador(props.largo!, props.limites.max!), lector: t.contadorLector(props.largo!, props.limites.max!) },
+);
 const describedby = computed(() =>
   describirPor(props.id, { ayuda: props.ayuda, contador: conContador.value, error: props.error }),
 );
@@ -34,10 +46,11 @@ const describedby = computed(() =>
         v-if="conContador"
         :id="`${id}-contador`"
         class="contador"
-        :class="{ excedido: largo! > limites.max! }"
+        :class="{ 'sobre-recomendado': sobreRecomendado, excedido }"
       >
-        <span aria-hidden="true">{{ textos.campos.contador(largo!, limites.max!) }}</span>
-        <span class="sr-only">{{ textos.campos.contadorLector(largo!, limites.max!) }}</span>
+        <span aria-hidden="true">{{ contador.visible }}</span>
+        <span class="sr-only">{{ contador.lector }}</span>
+        <template v-if="sobreRecomendado && !excedido"> · {{ t.sobreRecomendado }}</template>
       </span>
     </div>
     <p v-if="ayuda" :id="`${id}-ayuda`" class="ayuda">{{ ayuda }}</p>
@@ -56,9 +69,10 @@ const describedby = computed(() =>
 
 .encabezado {
   display: flex;
+  flex-wrap: wrap; /* en pantallas angostas el contador baja a su propia línea */
   align-items: baseline;
   justify-content: space-between;
-  gap: var(--space-3);
+  gap: var(--space-1) var(--space-3);
 }
 
 label {
@@ -77,8 +91,14 @@ label {
   white-space: nowrap;
 }
 
-.contador.excedido {
+/* Pasar el recomendado solo avisa; pasar el máximo además muestra el error del schema. */
+.contador.sobre-recomendado {
   color: var(--gold-light);
+}
+
+.contador.excedido {
+  color: var(--gold);
+  font-weight: 600;
 }
 
 .ayuda {

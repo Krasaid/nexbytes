@@ -2,17 +2,17 @@
 import { computed } from 'vue';
 
 import type { Bloque } from '../../lib/bloques';
-import { useBloque } from '../bloque';
+import { useBloque, type Ajustes } from '../bloque';
 import { useCambios } from '../cambios';
 import { confirmar } from '../confirmar';
 import { textos } from '../textos';
 
 // Marco común de los editores: título, carga, barra de guardado con su estado
 // y el formulario (los campos van en el slot).
-const props = defineProps<{ nombre: Bloque }>();
+const props = defineProps<{ nombre: Bloque; ajustes?: Ajustes }>();
 
 const t = textos.editor;
-const { estado, sucio, cantidadErrores, intentado, guardar, descartar, recargar } = useBloque(props.nombre);
+const { estado, sucio, cantidadErrores, intentado, guardar, descartar, recargar } = useBloque(props.nombre, props.ajustes);
 const cambios = useCambios();
 const sinPublicar = computed(() => cambios.pendientes.includes(props.nombre));
 

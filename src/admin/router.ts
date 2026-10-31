@@ -30,7 +30,7 @@ export const router = createRouter({
       path: '/contenido/:bloque',
       name: 'contenido',
       component: Contenido,
-      meta: { titulo: (ruta) => textos.bloques[ruta.params.bloque as Bloque], tarea: 'T19' },
+      meta: { titulo: (ruta) => textos.bloques[ruta.params.bloque as Bloque] },
       beforeEnter: (ruta) => (NOMBRES_BLOQUES.includes(ruta.params.bloque as Bloque) ? true : { name: 'inicio' }),
     },
     {

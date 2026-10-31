@@ -8,7 +8,7 @@ import { textos } from '../textos';
 // Lista de strings u objetos. Cada elemento se pinta con el slot, que recibe su
 // `ruta` (`nav.2`). Agregar, quitar (con confirmación) y subir/bajar respetan los
 // mínimos y máximos del schema (por ejemplo, exactamente 3 chips).
-const props = defineProps<{
+const props = withDefaults(defineProps<{
   ruta: string;
   etiqueta: string;
   /** Nombre de un elemento, en minúscula: "enlace" → "Agregar enlace", "enlace 2". */
@@ -16,9 +16,15 @@ const props = defineProps<{
   /** Valor de un elemento nuevo. */
   nuevo: () => T;
   ayuda?: string;
-}>();
+  /** false: el orden tiene significado (por ejemplo, los pasos fijos del cotizador). */
+  reordenable?: boolean;
+}>(), { reordenable: true, ayuda: undefined });
 
-defineSlots<{ default(props: { ruta: string; indice: number; item: T }): unknown }>();
+defineSlots<{
+  default(props: { ruta: string; indice: number; item: T }): unknown;
+  /** Extra en la cabecera de cada elemento (título, interruptor…). */
+  cabecera?(props: { ruta: string; indice: number; item: T }): unknown;
+}>();
 
 const t = textos.campos.lista;
 const { id, valor, error, limites, tocar } = useCampo(() => props.ruta);
@@ -29,6 +35,8 @@ const nombre = (i: number) => `${props.elemento} ${i + 1}`;
 const describedby = computed(() => describirPor(id.value, { ayuda: props.ayuda, error: error.value }));
 
 const lista = ref<HTMLElement | null>(null);
+/** Primer campo del contenido de un elemento (no los controles de su cabecera). */
+const PRIMER_CAMPO = '.contenido :is(input, textarea, select)';
 const botonAgregar = ref<HTMLButtonElement | null>(null);
 const elementoEn = (i: number) => lista.value?.querySelectorAll<HTMLElement>(':scope > li')[i];
 
@@ -60,13 +68,13 @@ async function quitar(i: number) {
   // El foco pasa al elemento que quedó en su lugar, al anterior o a "Agregar".
   await nextTick();
   const siguiente = elementoEn(Math.min(i, copia.length - 1));
-  enfocar(siguiente?.querySelector('input, textarea, select') ?? botonAgregar.value ?? lista.value);
+  enfocar(siguiente?.querySelector(PRIMER_CAMPO) ?? botonAgregar.value ?? lista.value);
 }
 
 async function agregar() {
   valor.value = [...items.value, props.nuevo()];
   await nextTick();
-  enfocar(elementoEn(items.value.length - 1)?.querySelector('input, textarea, select'));
+  enfocar(elementoEn(items.value.length - 1)?.querySelector(PRIMER_CAMPO));
 }
 </script>
 
@@ -88,8 +96,12 @@ async function agregar() {
       <li v-for="(item, i) in items" :key="i" class="elemento">
         <div class="cabecera">
           <span class="nombre">{{ nombre(i) }}</span>
+          <div v-if="$slots.cabecera" class="extra">
+            <slot name="cabecera" :ruta="`${ruta}.${i}`" :indice="i" :item="item" />
+          </div>
           <div class="acciones">
             <button
+              v-if="reordenable"
               type="button"
               class="icono"
               data-accion="subir"
@@ -100,6 +112,7 @@ async function agregar() {
               <svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19V5M5 12l7-7 7 7" /></svg>
             </button>
             <button
+              v-if="reordenable"
               type="button"
               class="icono"
               data-accion="bajar"
@@ -192,7 +205,16 @@ legend {
   gap: var(--space-3);
 }
 
+.extra {
+  display: flex;
+  flex: 1;
+  align-items: center;
+  gap: var(--space-3);
+  min-width: 0;
+}
+
 .nombre {
+  flex-shrink: 0;
   font-family: var(--font-mono);
   font-size: var(--text-xs);
   letter-spacing: var(--tracking-eyebrow);
@@ -234,6 +256,12 @@ legend {
   gap: var(--space-3);
 }
 
+/* Textos largos, grupos, etiquetas e imágenes ocupan toda la fila. */
+.contenido > :deep(.ancho),
+.contenido > :deep(fieldset) {
+  grid-column: 1 / -1;
+}
+
 .error {
   font-size: var(--text-label);
   color: var(--gold-light);
@@ -248,5 +276,18 @@ legend {
 
 .agregar {
   align-self: flex-start;
+}
+
+/* En pantallas angostas, lo extra de la cabecera (título, interruptor) baja a su propia línea. */
+@media (max-width: 767px) {
+  .cabecera {
+    flex-wrap: wrap;
+  }
+
+  .extra {
+    order: 3;
+    flex-basis: 100%;
+    justify-content: space-between;
+  }
 }
 </style>

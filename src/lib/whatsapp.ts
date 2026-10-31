@@ -9,6 +9,16 @@ const CODIGO_PAIS = '503';
 /** Largo máximo de la idea dentro del mensaje (Firestore guarda el texto completo). */
 export const IDEA_MAX = 500;
 
+/** Marcadores que entiende la plantilla de cotizador.json (`{ref}`, `{tipo}`, …). */
+export const MARCADORES = ['ref', 'tipo', 'funciones', 'plazo', 'presupuesto', 'nombre', 'negocio', 'idea'] as const;
+export type Marcador = (typeof MARCADORES)[number];
+
+/** Marcadores de la plantilla que no existen (sin repetir, en el orden en que aparecen). */
+export function marcadoresDesconocidos(plantilla: string): string[] {
+  const usados = Array.from(plantilla.matchAll(/\{(\w+)\}/g), (m) => m[1]);
+  return [...new Set(usados.filter((m) => !(MARCADORES as readonly string[]).includes(m)))];
+}
+
 /** Sin 0/O ni 1/I, para que el ref se pueda dictar sin confusiones. */
 const REF_ALFABETO = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
 
@@ -49,7 +59,7 @@ export function truncate(text: string, max: number): string {
  * condicionales. Los marcadores desconocidos se dejan tal cual.
  */
 export function buildQuoteMessage(template: string, data: QuoteMessageData): string {
-  const valores: Record<string, string> = {
+  const valores: Record<Marcador, string> = {
     ref: data.ref ?? '',
     tipo: data.tipo,
     funciones: data.funciones.join(', '),
@@ -59,16 +69,17 @@ export function buildQuoteMessage(template: string, data: QuoteMessageData): str
     negocio: data.negocio ?? '',
     idea: truncate(data.idea ?? '', IDEA_MAX),
   };
-  for (const key of Object.keys(valores)) valores[key] = limpiar(valores[key]);
+  for (const key of MARCADORES) valores[key] = limpiar(valores[key]);
 
   const lineas: string[] = [];
   for (const linea of template.split('\n')) {
     let vacia = false;
     // Un solo reemplazo por pasada: si el usuario escribe "{ref}" en su idea, no se vuelve a sustituir.
     const llena = linea.replace(/\{(\w+)\}/g, (marcador, key: string) => {
-      if (!(key in valores)) return marcador;
-      if (!valores[key]) vacia = true;
-      return valores[key];
+      if (!(MARCADORES as readonly string[]).includes(key)) return marcador;
+      const valor = valores[key as Marcador];
+      if (!valor) vacia = true;
+      return valor;
     });
     if (!vacia) lineas.push(llena);
   }

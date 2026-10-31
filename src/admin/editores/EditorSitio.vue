@@ -6,6 +6,7 @@ import SelectField from '../fields/SelectField.vue';
 import TextArea from '../fields/TextArea.vue';
 import TextField from '../fields/TextField.vue';
 import UrlField from '../fields/UrlField.vue';
+import { LARGOS_SEO } from '../../lib/schemas';
 import { textos } from '../textos';
 import EditorBloque from './EditorBloque.vue';
 import Seccion from './Seccion.vue';
@@ -39,8 +40,20 @@ const enlaceNuevo = () => ({ label: '', href: '' });
     </Seccion>
 
     <Seccion id="seo" :titulo="t.seo">
-      <TextField class="ancho" ruta="seo.titulo" :etiqueta="t.seoTitulo" :ayuda="t.seoTituloAyuda" />
-      <TextArea class="ancho" ruta="seo.descripcion" :etiqueta="t.seoDescripcion" :ayuda="t.seoDescripcionAyuda" />
+      <TextField
+        class="ancho"
+        ruta="seo.titulo"
+        :etiqueta="t.seoTitulo"
+        :ayuda="t.seoTituloAyuda"
+        :recomendado="LARGOS_SEO.titulo.recomendado"
+      />
+      <TextArea
+        class="ancho"
+        ruta="seo.descripcion"
+        :etiqueta="t.seoDescripcion"
+        :ayuda="t.seoDescripcionAyuda"
+        :recomendado="LARGOS_SEO.descripcion.recomendado"
+      />
       <ImageField ruta="seo.imagenOg" :etiqueta="t.imagenOg" :ayuda="t.imagenOgAyuda" />
       <fieldset class="grupo">
         <legend>{{ t.ubicacion }}</legend>
@@ -51,7 +64,7 @@ const enlaceNuevo = () => ({ label: '', href: '' });
         </div>
       </fieldset>
       <ListField v-slot="{ ruta, indice }" ruta="seo.areaServida" :etiqueta="t.areaServida" :elemento="t.zona" :nuevo="() => ''">
-        <TextField :ruta="ruta" :etiqueta="`${t.zona} ${indice + 1}`" />
+        <TextField :ruta="ruta" :etiqueta="textos.numerado(t.zona, indice + 1)" />
       </ListField>
     </Seccion>
 
