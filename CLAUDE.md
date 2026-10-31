@@ -27,7 +27,7 @@ Más adelante habrá un **CMS propio** que editará todo el contenido. Por eso:
 
 - Todo texto visible, link, imagen, lista de servicios/proyectos/opciones del cotizador vive en `src/content/data/*.json`.
 - Los componentes **solo reciben datos por props** y los pintan. No hay copy en los `.astro` ni en los `.vue`, salvo textos de accesibilidad genéricos (por ejemplo `aria-label="Abrir menú"`).
-- Los datos se leen **únicamente** a través de `src/lib/content.ts` (`getSite()`, `getHero()`, `getServicios()`, etc.), que valida con **zod** (`src/lib/schemas.ts`). Hoy lee los JSON locales; cuando exista el CMS, solo cambia la implementación de `content.ts` (leer de Firestore en build). Los componentes no se tocan.
+- Los datos se leen **únicamente** a través de `src/lib/content.ts` (`getSite()`, `getHero()`, `getServicios()`, etc.), que valida con **zod** (`src/lib/schemas.ts`). La fuente la elige `CONTENT_SOURCE` (JSON locales o Firestore en build); los componentes no se enteran.
 - Si una tarea necesita un dato nuevo: agrégalo al schema, al JSON y a `content.ts`, en ese orden.
 
 **Excepción: el admin.** Esta regla aplica a la landing. Los textos de la interfaz del panel `/admin` ("Guardar", "Sin acceso", mensajes de error, etc.) no los edita el CMS y van centralizados en `src/admin/textos.ts`, no repartidos por los componentes.
@@ -89,7 +89,8 @@ src/
 
 ## Cómo encajan las piezas
 
-- **Contenido:** `pages/index.astro` llama a todos los `get*()` de `content.ts` y pasa cada bloque como prop a su sección. Las funciones son `async` a propósito (el CMS leerá de Firestore en build). `getProyectos()` ya filtra `visible` y ordena por `orden`. Si un JSON no cumple el schema, el build falla con el archivo y el campo.
+- **Contenido:** `pages/index.astro` llama a todos los `get*()` de `content.ts` y pasa cada bloque como prop a su sección. `getProyectos()` ya filtra `visible` y ordena por `orden`. La lista de bloques y sus schemas está **solo** en `src/lib/bloques.ts`.
+- **Fuente del contenido (`CONTENT_SOURCE`):** `local` (JSON, por defecto), `firestore` (`publicado/{bloque}`, producción) o `firestore-borradores` (`borradores/{bloque}`, vistas previas). Las dos de Firestore las lee `content-firestore.ts` con firebase-admin y la cuenta de servicio, cargado con `import()` para que el build local no lo toque. Si un bloque falta o no cumple el schema, el build falla con el archivo o documento y el campo. Para probar sin el proyecto real: `FIRESTORE_EMULATOR_HOST=127.0.0.1:8080` + `npm run seed -- --yes` dentro de `firebase emulators:exec --project demo-nexbytes`.
 - **Placeholders de contacto:** en `site.json`, `correo` y `whatsapp` pueden valer `[CORREO]` / `[WHATSAPP]`. `links.ts` devuelve `undefined` y `seo.ts` omite el dato, así el componente muestra texto sin link. Mantén ese comportamiento al tocar contacto.
 - **Formularios:** islas Vue → `forms.ts` → `import('./firebase')` (App Check con reCAPTCHA v3 + Firestore **Lite**). Nunca importes `firebase.ts` de forma estática: la página no debe descargar Firebase al abrirse. Hay campo trampa (honeypot) y un timeout de 10 s. El cotizador guarda en Firestore y luego abre WhatsApp con el mensaje de `buildQuoteMessage()` (plantilla `plantillaWhatsapp` de `cotizador.json`, marcadores `{ref}`, `{tipo}`, `{funciones}`…; las líneas con marcador vacío se omiten). Si no se pudo guardar, muestra el error con un link de WhatsApp sin `{ref}`. En escritorio la pestaña se abre **antes** del `await` (si no, el navegador la bloquea como popup).
 - **Límites en tres lugares:** `limites.ts` ↔ `firestore.rules` (mismos valores, a mano) y `schemas.ts` los usa para que el contenido del cotizador no genere opciones que las reglas rechacen. Si cambias un campo de `cotizaciones` o `lista_espera`, toca los tres y `tests/rules`.
@@ -100,7 +101,7 @@ src/
 ## Comandos
 
 - `npm run dev`: servidor local (http://localhost:4321). Para dejarlo corriendo en segundo plano: `npx astro dev --background` (y `astro dev stop|status|logs`)
-- `npm run build`: build estático en `dist/`
+- `npm run build`: build estático en `dist/` (con los JSON). `CONTENT_SOURCE=firestore npm run build` construye desde Firestore
 - `npm run preview`: sirve `dist/` con la CSP real; úsalo para revisar errores de CSP en la consola
 - `npx astro check`: chequeo de tipos de `.astro`/`.ts` (no hay linter configurado)
 - `npm test`: pruebas unitarias (Vitest, `tests/unit`). Una sola: `npx vitest run tests/unit/whatsapp.test.ts -t "nombre del test"`
@@ -122,5 +123,6 @@ PUBLIC_FIREBASE_PROJECT_ID=
 PUBLIC_FIREBASE_APP_ID=
 PUBLIC_RECAPTCHA_SITE_KEY=
 # Opcional, solo desarrollo: PUBLIC_FIRESTORE_EMULATOR=127.0.0.1:8080
-# Solo para npm run seed (ruta fuera del repo): GOOGLE_APPLICATION_CREDENTIALS=
+# Solo para npm run seed y el build desde Firestore (ruta fuera del repo): GOOGLE_APPLICATION_CREDENTIALS=
+# Solo build: CONTENT_SOURCE=local | firestore | firestore-borradores (por defecto local)
 ```

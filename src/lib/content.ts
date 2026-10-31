@@ -1,32 +1,18 @@
 /**
  * Única puerta de acceso al contenido de la landing.
  *
- * Hoy lee los JSON de src/content/data/ y los valida con los schemas de
- * ./schemas.ts. En la fase CMS esta capa leerá los mismos bloques desde
- * Firestore durante el build: solo cambia la implementación de este archivo,
- * no las firmas. Por eso todas las funciones son async desde ya, y los
- * componentes nunca importan los JSON directamente.
+ * La fuente la elige CONTENT_SOURCE (variable del sistema o de .env):
+ *   local                 los JSON de src/content/data/ (por defecto, en desarrollo)
+ *   firestore             Firestore publicado/{bloque} (producción, en CI)
+ *   firestore-borradores  Firestore borradores/{bloque} (vistas previas)
+ *
+ * Toda fuente pasa por los schemas de ./schemas.ts (vía ./bloques.ts): si un
+ * bloque falta o no cumple, el build falla con un mensaje que dice dónde.
+ * Las firmas no dependen de la fuente, así que los componentes nunca cambian
+ * y nunca importan los JSON directamente.
  */
-import type { z } from 'zod';
-
-import {
-  cotizadorSchema,
-  heroSchema,
-  nosotrosSchema,
-  procesoSchema,
-  productoSchema,
-  proyectosSchema,
-  serviciosSchema,
-  siteSchema,
-  type Cotizador,
-  type Hero,
-  type Nosotros,
-  type Proceso,
-  type Producto,
-  type Proyectos,
-  type Servicios,
-  type Site,
-} from './schemas';
+import { validarBloque, type Bloque, type ContenidoDe } from './bloques';
+import type { Cotizador, Hero, Nosotros, Proceso, Producto, Proyectos, Servicios, Site } from './schemas';
 
 import siteData from '../content/data/site.json';
 import heroData from '../content/data/hero.json';
@@ -37,32 +23,55 @@ import productoData from '../content/data/producto.json';
 import cotizadorData from '../content/data/cotizador.json';
 import nosotrosData from '../content/data/nosotros.json';
 
-/** Valida un bloque y, si falla, lanza un error que dice el archivo y cada campo mal. */
-function validar<S extends z.ZodType>(schema: S, data: unknown, bloque: string): z.output<S> {
-  const result = schema.safeParse(data);
-  if (result.success) return result.data;
+const LOCALES: Record<Bloque, unknown> = {
+  site: siteData,
+  hero: heroData,
+  servicios: serviciosData,
+  proyectos: proyectosData,
+  proceso: procesoData,
+  producto: productoData,
+  cotizador: cotizadorData,
+  nosotros: nosotrosData,
+};
 
-  const detalle = result.error.issues
-    .map((issue) => `  • ${issue.path.length ? issue.path.join('.') : '(raíz)'}: ${issue.message}`)
-    .join('\n');
-  throw new Error(`Contenido inválido en src/content/data/${bloque}.json\n${detalle}`);
+const FUENTES = ['local', 'firestore', 'firestore-borradores'] as const;
+type Fuente = (typeof FUENTES)[number];
+
+function fuente(): Fuente {
+  const valor = process.env.CONTENT_SOURCE || import.meta.env.CONTENT_SOURCE || 'local';
+  if (!(FUENTES as readonly string[]).includes(valor)) {
+    throw new Error(`CONTENT_SOURCE="${valor}" no es válido. Usa ${FUENTES.join(', ')}.`);
+  }
+  return valor as Fuente;
+}
+
+async function cargar<B extends Bloque>(nombre: B): Promise<ContenidoDe<B>> {
+  const origen = fuente();
+  if (origen === 'local') {
+    return validarBloque(nombre, LOCALES[nombre], `src/content/data/${nombre}.json`);
+  }
+
+  const coleccion = origen === 'firestore' ? 'publicado' : 'borradores';
+  const { leerBloques } = await import('./content-firestore');
+  const datos = await leerBloques(coleccion);
+  return validarBloque(nombre, datos[nombre], `Firestore ${coleccion}/${nombre}`);
 }
 
 export async function getSite(): Promise<Site> {
-  return validar(siteSchema, siteData, 'site');
+  return cargar('site');
 }
 
 export async function getHero(): Promise<Hero> {
-  return validar(heroSchema, heroData, 'hero');
+  return cargar('hero');
 }
 
 export async function getServicios(): Promise<Servicios> {
-  return validar(serviciosSchema, serviciosData, 'servicios');
+  return cargar('servicios');
 }
 
 /** Solo los proyectos visibles, ordenados por `orden`. */
 export async function getProyectos(): Promise<Proyectos> {
-  const data = validar(proyectosSchema, proyectosData, 'proyectos');
+  const data = await cargar('proyectos');
   return {
     ...data,
     items: data.items.filter((p) => p.visible).sort((a, b) => a.orden - b.orden),
@@ -70,17 +79,17 @@ export async function getProyectos(): Promise<Proyectos> {
 }
 
 export async function getProceso(): Promise<Proceso> {
-  return validar(procesoSchema, procesoData, 'proceso');
+  return cargar('proceso');
 }
 
 export async function getProducto(): Promise<Producto> {
-  return validar(productoSchema, productoData, 'producto');
+  return cargar('producto');
 }
 
 export async function getCotizador(): Promise<Cotizador> {
-  return validar(cotizadorSchema, cotizadorData, 'cotizador');
+  return cargar('cotizador');
 }
 
 export async function getNosotros(): Promise<Nosotros> {
-  return validar(nosotrosSchema, nosotrosData, 'nosotros');
+  return cargar('nosotros');
 }

@@ -62,7 +62,7 @@ Landing ─────────┘ HTML estático (sin cambios para el visit
 
 **Listo cuando:** `npm run seed` llena Firestore, y las pruebas de reglas confirman que el público no puede leer `publicado` ni `borradores` y que una actualización con `version` incorrecta se rechaza.
 
-### [ ] T15. El build lee de Firestore
+### [x] T15. El build lee de Firestore
 - `src/lib/content.ts`: fuente según la variable `CONTENT_SOURCE`, que acepta tres valores: `local` (los JSON, por defecto en desarrollo), `firestore` (lee `publicado`) y `firestore-borradores` (lee `borradores`, para las vistas previas).
 - Las dos fuentes de Firestore leen con firebase-admin y la cuenta de servicio, nunca con el SDK cliente ni con REST pública.
 - Con `firestore` o `firestore-borradores`, lee cada `{bloque}` en tiempo de build, valida con zod y **falla el build** con un mensaje claro si falta un bloque o no pasa el schema. Nunca publica contenido vacío.

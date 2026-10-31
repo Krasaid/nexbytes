@@ -20,7 +20,8 @@ Variables de `.env` (ver `.env.example`):
 | `PUBLIC_FIREBASE_*` | Configuración web de Firebase (proyecto `nexbytes`). |
 | `PUBLIC_RECAPTCHA_SITE_KEY` | Clave de sitio de reCAPTCHA v3 para App Check. |
 | `PUBLIC_FIRESTORE_EMULATOR` | Opcional, solo en desarrollo: `127.0.0.1:8080` para usar el emulador. |
-| `GOOGLE_APPLICATION_CREDENTIALS` | Solo para `npm run seed`: ruta al JSON de la cuenta de servicio. Guárdalo **fuera del repo**. |
+| `GOOGLE_APPLICATION_CREDENTIALS` | Para `npm run seed` y el build desde Firestore: ruta al JSON de la cuenta de servicio. Guárdalo **fuera del repo**. |
+| `CONTENT_SOURCE` | De dónde sale el contenido del build: `local` (JSON de `src/content/data/`, por defecto), `firestore` (lo publicado) o `firestore-borradores` (vistas previas). |
 
 ## Comandos
 
