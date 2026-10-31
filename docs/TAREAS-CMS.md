@@ -46,12 +46,16 @@ Landing ─────────┘ HTML estático (sin cambios para el visit
 
 ## Fase 4a: Datos, build y despliegue
 
-### [ ] T14. Firestore para contenido + semilla
+### [x] T14. Firestore para contenido + semilla
 - Colecciones nuevas:
   - `borradores/{bloque}`: solo el admin lee y escribe.
   - `publicado/{bloque}`: solo el admin lee y escribe (el build lee con firebase-admin).
   - `publicaciones/{id}`: historial de publicaciones con `estado` (`solicitada` | `construyendo` | `publicada` | `error`), `tipo` (`produccion` | `preview`), `solicitadaEn`, `terminadaEn?`, `url?` y `error?`. El admin lee y crea; GitHub Actions actualiza (con cuenta de servicio).
 - Cada documento de contenido lleva `actualizadoEn` (serverTimestamp) y `version` (entero que sube en cada guardado). Las reglas exigen que en cada actualización `version` sea exactamente el valor anterior + 1, y que `actualizadoEn` sea `request.time`.
+- **Excepción en `publicado`: copia exacta del borrador.** La regla de `version + 1` aplica a `borradores`. En `publicado`, las reglas exigen que el documento sea idéntico a `borradores/{bloque}` en ese momento (mismo contenido y misma `version`); solo puede cambiar `actualizadoEn`, que va con `request.time`. Así "version del borrador > publicado" indica los cambios sin publicar, y volver a publicar un bloque sin cambios es válido. Consecuencias para **T22**:
+  - Publicar **solo lee** los borradores y escribe `publicado`; nunca modifica un borrador en el mismo batch (la regla compara contra el borrador ya guardado, no contra el resultado del batch).
+  - Copia cada borrador tal cual, sin quitar ni agregar campos, salvo `actualizadoEn: serverTimestamp()`.
+  - Si el borrador cambia entre la lectura y el batch, la regla rechaza la publicación: hay que volver a leer y reintentar.
 - Ampliar las reglas existentes de `cotizaciones` y `lista_espera`: el admin también puede editar un campo `notas` (string de hasta 2000 caracteres).
 - Script `npm run seed`: valida cada JSON de `src/content/data/` con su schema y lo sube a `borradores` y `publicado`. Usa firebase-admin con una cuenta de servicio (`GOOGLE_APPLICATION_CREDENTIALS`, fuera del repo). Pide confirmación antes de sobrescribir.
 - Pruebas de reglas con el emulador para todo lo nuevo.

@@ -201,6 +201,179 @@ describe('lista_espera', () => {
   });
 });
 
+describe('notas del admin', () => {
+  beforeEach(async () => {
+    await sembrar('cotizaciones', 'c1', { ...cotizacion(), creadoEn: new Date() });
+    await sembrar('lista_espera', 'l1', { ...registro(), creadoEn: new Date() });
+  });
+
+  it('el admin puede escribir notas, solas o junto con el estado', async () => {
+    await assertSucceeds(updateDoc(doc(admin(), 'cotizaciones', 'c1'), { notas: 'Llamar el lunes' }));
+    await assertSucceeds(updateDoc(doc(admin(), 'cotizaciones', 'c1'), { estado: 'propuesta', notas: '' }));
+    await assertSucceeds(updateDoc(doc(admin(), 'lista_espera', 'l1'), { notas: 'Conocido de Ana' }));
+  });
+
+  it('rechaza notas demasiado largas o que no son texto', async () => {
+    await assertFails(updateDoc(doc(admin(), 'cotizaciones', 'c1'), { notas: 'x'.repeat(2001) }));
+    await assertFails(updateDoc(doc(admin(), 'lista_espera', 'l1'), { notas: 42 }));
+  });
+
+  it('el público no puede mandar notas al crear ni editarlas', async () => {
+    await assertFails(addDoc(collection(publico(), 'cotizaciones'), { ...cotizacion(), notas: 'hola' }));
+    await assertFails(addDoc(collection(publico(), 'lista_espera'), { ...registro(), notas: 'hola' }));
+    await assertFails(updateDoc(doc(publico(), 'cotizaciones', 'c1'), { notas: 'hola' }));
+  });
+});
+
+/** Un bloque de contenido ya guardado (como lo deja `npm run seed`). */
+const bloque = (version: number) => ({ titulo: 'Software que resuelve', version, actualizadoEn: new Date() });
+
+describe('borradores', () => {
+  beforeEach(async () => {
+    await sembrar('borradores', 'hero', bloque(3));
+  });
+
+  it('el público y otros usuarios no pueden leer ni escribir', async () => {
+    for (const db of [publico(), otroUsuario()]) {
+      await assertFails(getDoc(doc(db, 'borradores', 'hero')));
+      await assertFails(getDocs(collection(db, 'borradores')));
+      await assertFails(
+        updateDoc(doc(db, 'borradores', 'hero'), { titulo: 'x', version: 4, actualizadoEn: serverTimestamp() }),
+      );
+    }
+  });
+
+  it('el admin puede leer y listar', async () => {
+    await assertSucceeds(getDoc(doc(admin(), 'borradores', 'hero')));
+    await assertSucceeds(getDocs(collection(admin(), 'borradores')));
+  });
+
+  it('el admin guarda con version + 1 y la hora del servidor', async () => {
+    await assertSucceeds(
+      updateDoc(doc(admin(), 'borradores', 'hero'), { titulo: 'Nuevo', version: 4, actualizadoEn: serverTimestamp() }),
+    );
+  });
+
+  it('rechaza una actualización con version incorrecta', async () => {
+    for (const version of [3, 5, 2, '4']) {
+      await assertFails(
+        updateDoc(doc(admin(), 'borradores', 'hero'), { titulo: 'Nuevo', version, actualizadoEn: serverTimestamp() }),
+      );
+    }
+    // Sin tocar version tampoco.
+    await assertFails(updateDoc(doc(admin(), 'borradores', 'hero'), { titulo: 'Nuevo', actualizadoEn: serverTimestamp() }));
+  });
+
+  it('rechaza actualizadoEn que no sea la hora del servidor', async () => {
+    await assertFails(
+      updateDoc(doc(admin(), 'borradores', 'hero'), { titulo: 'Nuevo', version: 4, actualizadoEn: new Date(0) }),
+    );
+    await assertFails(updateDoc(doc(admin(), 'borradores', 'hero'), { titulo: 'Nuevo', version: 4 }));
+  });
+
+  it('el admin crea un bloque conocido con version 1', async () => {
+    await assertSucceeds(
+      setDoc(doc(admin(), 'borradores', 'proceso'), { pasos: [], version: 1, actualizadoEn: serverTimestamp() }),
+    );
+    await assertFails(
+      setDoc(doc(admin(), 'borradores', 'nosotros'), { titulo: 'x', version: 2, actualizadoEn: serverTimestamp() }),
+    );
+    await assertFails(
+      setDoc(doc(admin(), 'borradores', 'blog'), { titulo: 'x', version: 1, actualizadoEn: serverTimestamp() }),
+    );
+  });
+
+  it('nadie puede borrar', async () => {
+    await assertFails(deleteDoc(doc(admin(), 'borradores', 'hero')));
+    await assertFails(deleteDoc(doc(publico(), 'borradores', 'hero')));
+  });
+});
+
+describe('publicado', () => {
+  beforeEach(async () => {
+    await sembrar('borradores', 'hero', bloque(5));
+    await sembrar('publicado', 'hero', { ...bloque(3), titulo: 'Título anterior' });
+  });
+
+  it('el público y otros usuarios no pueden leer ni escribir', async () => {
+    for (const db of [publico(), otroUsuario()]) {
+      await assertFails(getDoc(doc(db, 'publicado', 'hero')));
+      await assertFails(getDocs(collection(db, 'publicado')));
+      await assertFails(setDoc(doc(db, 'publicado', 'hero'), { ...bloque(5), actualizadoEn: serverTimestamp() }));
+    }
+  });
+
+  it('el admin puede leer y listar', async () => {
+    await assertSucceeds(getDoc(doc(admin(), 'publicado', 'hero')));
+    await assertSucceeds(getDocs(collection(admin(), 'publicado')));
+  });
+
+  it('el admin publica una copia exacta del borrador, con su misma version', async () => {
+    await assertSucceeds(setDoc(doc(admin(), 'publicado', 'hero'), { ...bloque(5), actualizadoEn: serverTimestamp() }));
+  });
+
+  it('publicar de nuevo un borrador sin cambios también vale', async () => {
+    await sembrar('publicado', 'hero', bloque(5));
+    await assertSucceeds(setDoc(doc(admin(), 'publicado', 'hero'), { ...bloque(5), actualizadoEn: serverTimestamp() }));
+  });
+
+  it('rechaza contenido o version distintos del borrador', async () => {
+    await assertFails(
+      setDoc(doc(admin(), 'publicado', 'hero'), { ...bloque(5), titulo: 'Otro', actualizadoEn: serverTimestamp() }),
+    );
+    await assertFails(setDoc(doc(admin(), 'publicado', 'hero'), { ...bloque(4), actualizadoEn: serverTimestamp() }));
+    await assertFails(
+      setDoc(doc(admin(), 'publicado', 'hero'), { ...bloque(5), extra: true, actualizadoEn: serverTimestamp() }),
+    );
+  });
+
+  it('rechaza actualizadoEn que no sea la hora del servidor', async () => {
+    await assertFails(setDoc(doc(admin(), 'publicado', 'hero'), bloque(5)));
+  });
+
+  it('rechaza publicar un bloque sin borrador', async () => {
+    await assertFails(
+      setDoc(doc(admin(), 'publicado', 'nosotros'), { ...bloque(1), actualizadoEn: serverTimestamp() }),
+    );
+  });
+
+  it('nadie puede borrar', async () => {
+    await assertFails(deleteDoc(doc(admin(), 'publicado', 'hero')));
+  });
+});
+
+describe('publicaciones', () => {
+  const solicitud = () => ({ estado: 'solicitada', tipo: 'preview', solicitadaEn: serverTimestamp() });
+
+  it('el admin puede solicitar una publicación de producción o de vista previa', async () => {
+    await assertSucceeds(addDoc(collection(admin(), 'publicaciones'), solicitud()));
+    await assertSucceeds(addDoc(collection(admin(), 'publicaciones'), { ...solicitud(), tipo: 'produccion' }));
+  });
+
+  it('rechaza otro estado, tipo desconocido, campos extra o fecha del cliente', async () => {
+    const col = collection(admin(), 'publicaciones');
+    await assertFails(addDoc(col, { ...solicitud(), estado: 'publicada' }));
+    await assertFails(addDoc(col, { ...solicitud(), tipo: 'staging' }));
+    await assertFails(addDoc(col, { ...solicitud(), url: 'https://nexbytes1.web.app' }));
+    await assertFails(addDoc(col, { ...solicitud(), solicitadaEn: new Date() }));
+  });
+
+  it('el admin lee el historial pero no lo edita ni lo borra', async () => {
+    await sembrar('publicaciones', 'p1', { estado: 'construyendo', tipo: 'preview', solicitadaEn: new Date() });
+    await assertSucceeds(getDoc(doc(admin(), 'publicaciones', 'p1')));
+    await assertSucceeds(getDocs(collection(admin(), 'publicaciones')));
+    await assertFails(updateDoc(doc(admin(), 'publicaciones', 'p1'), { estado: 'publicada' }));
+    await assertFails(deleteDoc(doc(admin(), 'publicaciones', 'p1')));
+  });
+
+  it('el público no puede leer ni solicitar', async () => {
+    await sembrar('publicaciones', 'p1', { estado: 'publicada', tipo: 'produccion', solicitadaEn: new Date() });
+    await assertFails(getDoc(doc(publico(), 'publicaciones', 'p1')));
+    await assertFails(addDoc(collection(publico(), 'publicaciones'), solicitud()));
+    await assertFails(addDoc(collection(otroUsuario(), 'publicaciones'), solicitud()));
+  });
+});
+
 describe('otras colecciones', () => {
   it('están cerradas para todos', async () => {
     await assertFails(setDoc(doc(publico(), 'contenido', 'site'), { a: 1 }));

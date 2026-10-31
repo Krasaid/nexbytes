@@ -20,6 +20,7 @@ Variables de `.env` (ver `.env.example`):
 | `PUBLIC_FIREBASE_*` | Configuración web de Firebase (proyecto `nexbytes`). |
 | `PUBLIC_RECAPTCHA_SITE_KEY` | Clave de sitio de reCAPTCHA v3 para App Check. |
 | `PUBLIC_FIRESTORE_EMULATOR` | Opcional, solo en desarrollo: `127.0.0.1:8080` para usar el emulador. |
+| `GOOGLE_APPLICATION_CREDENTIALS` | Solo para `npm run seed`: ruta al JSON de la cuenta de servicio. Guárdalo **fuera del repo**. |
 
 ## Comandos
 
@@ -30,6 +31,7 @@ Variables de `.env` (ver `.env.example`):
 | `npm run preview` | Sirve `dist/` en local (con la CSP real) |
 | `npm test` | Pruebas unitarias (Vitest) |
 | `npm run test:rules` | Pruebas de `firestore.rules` contra el emulador (necesita Java 21+) |
+| `npm run seed` | Valida los JSON de `src/content/data/` y los sube a Firestore (`borradores` y `publicado`). Pide confirmación antes de sobrescribir; `npm run seed -- --dry-run` solo muestra lo que haría |
 | `npm run emulators` | Emulador de Firestore para probar formularios en local |
 | `npm run deploy:preview` | Pruebas + build + canal de vista previa `preview` (vence en 7 días) |
 | `npm run deploy` | Pruebas + build + publicar en producción |

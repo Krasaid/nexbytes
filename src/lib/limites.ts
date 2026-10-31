@@ -14,4 +14,6 @@ export const LIMITES = {
   correo: 254,
   whatsapp: 30,
   descripcion: 2000,
+  /** Notas internas del admin en cotizaciones y lista de espera. */
+  notas: 2000,
 } as const;

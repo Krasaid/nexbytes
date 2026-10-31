@@ -70,6 +70,7 @@ src/
     firebase.ts        # init de Firebase (cliente); solo se carga con import()
     forms.ts           # submitQuote / submitWaitlist → Firestore
     limites.ts         # largos máximos (espejo de firestore.rules)
+    bloques.ts         # registro bloque → schema (lo usan la semilla, el build y el CMS)
     whatsapp.ts        # mensaje y link de WhatsApp, ref de cotización (funciones puras)
     links.ts, seo.ts   # links de contacto y JSON-LD a partir de site.json
   styles/
@@ -104,6 +105,7 @@ src/
 - `npx astro check`: chequeo de tipos de `.astro`/`.ts` (no hay linter configurado)
 - `npm test`: pruebas unitarias (Vitest, `tests/unit`). Una sola: `npx vitest run tests/unit/whatsapp.test.ts -t "nombre del test"`
 - `npm run test:rules`: pruebas de `firestore.rules` con el emulador (`tests/rules`, proyecto `demo-nexbytes`, necesita Java 21+). `scripts/test-rules.mjs` cierra el proceso java que el emulador deja vivo en Windows
+- `npm run seed`: valida los JSON y los sube a `borradores` y `publicado` (firebase-admin, `GOOGLE_APPLICATION_CREDENTIALS`). `--dry-run` muestra lo que haría; `--yes` no pregunta; con `FIRESTORE_EMULATOR_HOST` escribe en el emulador
 - `npm run emulators`: emulador de Firestore para probar los formularios en local (con `PUBLIC_FIRESTORE_EMULATOR` en `.env`)
 - `npm run deploy`: pruebas + build + publicar (`firebase deploy --only hosting`)
 - `npm run deploy:preview`: pruebas + build + canal de vista previa `preview` (vence en 7 días)
@@ -120,4 +122,5 @@ PUBLIC_FIREBASE_PROJECT_ID=
 PUBLIC_FIREBASE_APP_ID=
 PUBLIC_RECAPTCHA_SITE_KEY=
 # Opcional, solo desarrollo: PUBLIC_FIRESTORE_EMULATOR=127.0.0.1:8080
+# Solo para npm run seed (ruta fuera del repo): GOOGLE_APPLICATION_CREDENTIALS=
 ```

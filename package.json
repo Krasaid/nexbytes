@@ -12,6 +12,7 @@
     "astro": "astro",
     "test": "vitest run tests/unit",
     "test:rules": "node scripts/test-rules.mjs",
+    "seed": "tsx scripts/seed.ts",
     "emulators": "firebase emulators:start --only firestore",
     "deploy": "npm test && npm run build && firebase deploy --only hosting",
     "deploy:preview": "npm test && npm run build && firebase hosting:channel:deploy preview --expires 7d",
@@ -32,6 +33,8 @@
   },
   "devDependencies": {
     "@firebase/rules-unit-testing": "^6.0.0",
+    "firebase-admin": "^14.5.0",
+    "tsx": "^4.23.15",
     "vitest": "^5.0.5"
   }
 }

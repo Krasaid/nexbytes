@@ -1,10 +1,13 @@
 rules_version = '2';
 
-// Reglas de la landing de Nexbytes.
+// Reglas de la landing y el CMS de Nexbytes.
 // - El público solo puede CREAR en `cotizaciones` y `lista_espera`, con campos y largos validados.
-// - El admin puede leer y cambiar solo `estado`.
+// - En esas dos colecciones el admin puede leer y cambiar solo `estado` y `notas`.
+// - El contenido (`borradores`, `publicado`) y `publicaciones` son solo del admin. El build y
+//   GitHub Actions usan firebase-admin, que se salta estas reglas.
 // - Nadie puede borrar desde el cliente.
 // Los largos máximos son los de src/lib/limites.ts: si cambias uno, cámbialo en ambos lados.
+// Los nombres de bloque son los de src/lib/bloques.ts.
 // Pruebas: npm run test:rules (emulador).
 
 service cloud.firestore {
@@ -31,10 +34,12 @@ service cloud.firestore {
         && funcionOk(l, 8) && funcionOk(l, 9) && funcionOk(l, 10) && funcionOk(l, 11);
     }
 
-    // El admin solo puede tocar `estado`, y solo con un valor conocido.
-    function soloCambiaEstado(estados) {
-      return request.resource.data.diff(resource.data).affectedKeys().hasOnly(['estado'])
-        && request.resource.data.estado in estados;
+    // El admin solo puede tocar `estado` (con un valor conocido) y `notas`.
+    function soloCambiaEstadoYNotas(estados) {
+      let d = request.resource.data;
+      return d.diff(resource.data).affectedKeys().hasOnly(['estado', 'notas'])
+        && d.estado in estados
+        && (!('notas' in d) || texto(d.notas, 0, 2000));
     }
 
     match /cotizaciones/{id} {
@@ -68,7 +73,7 @@ service cloud.firestore {
       allow create: if cotizacionValida(request.resource.data);
       allow read: if isAdmin();
       allow update: if isAdmin()
-        && soloCambiaEstado(['nuevo', 'contactado', 'propuesta', 'ganado', 'perdido']);
+        && soloCambiaEstadoYNotas(['nuevo', 'contactado', 'propuesta', 'ganado', 'perdido']);
       allow delete: if false;
     }
 
@@ -84,8 +89,64 @@ service cloud.firestore {
 
       allow create: if registroValido(request.resource.data);
       allow read: if isAdmin();
-      allow update: if isAdmin() && soloCambiaEstado(['nuevo', 'invitado', 'baja']);
+      allow update: if isAdmin() && soloCambiaEstadoYNotas(['nuevo', 'invitado', 'baja']);
       allow delete: if false;
+    }
+
+    // ── Contenido del CMS ──────────────────────────────────────────────
+
+    function esBloque(b) {
+      return b in ['site', 'hero', 'servicios', 'proyectos', 'proceso', 'producto', 'cotizador', 'nosotros'];
+    }
+
+    // Cada guardado lleva `version` entera y `actualizadoEn` con la hora del servidor.
+    function metaOk(d) {
+      return d.version is int && d.actualizadoEn == request.time;
+    }
+
+    match /borradores/{bloque} {
+      allow read: if isAdmin();
+      allow create: if isAdmin() && esBloque(bloque)
+        && metaOk(request.resource.data)
+        && request.resource.data.version == 1;
+      // `version` sube de uno en uno: un guardado hecho sobre una copia vieja se rechaza.
+      allow update: if isAdmin()
+        && metaOk(request.resource.data)
+        && request.resource.data.version == resource.data.version + 1;
+      allow delete: if false;
+    }
+
+    match /publicado/{bloque} {
+      // Publicar es copiar el borrador tal cual, con su misma `version`: así el admin
+      // sabe qué bloques tienen cambios sin publicar (version del borrador > publicado).
+      // Solo cambia `actualizadoEn`.
+      function copiaDelBorrador() {
+        let ruta = /databases/$(database)/documents/borradores/$(bloque);
+        return exists(ruta)
+          && request.resource.data.diff(get(ruta).data).affectedKeys().hasOnly(['actualizadoEn']);
+      }
+
+      allow read: if isAdmin();
+      allow create, update: if isAdmin() && esBloque(bloque)
+        && metaOk(request.resource.data)
+        && copiaDelBorrador();
+      allow delete: if false;
+    }
+
+    // Historial de publicaciones. El admin las solicita; GitHub Actions (firebase-admin)
+    // cambia `estado` y agrega `terminadaEn`, `url` o `error`.
+    match /publicaciones/{id} {
+      function solicitudValida(d) {
+        return d.keys().hasOnly(['estado', 'tipo', 'solicitadaEn'])
+          && d.keys().hasAll(['estado', 'tipo', 'solicitadaEn'])
+          && d.estado == 'solicitada'
+          && d.tipo in ['produccion', 'preview']
+          && d.solicitadaEn == request.time;
+      }
+
+      allow read: if isAdmin();
+      allow create: if isAdmin() && solicitudValida(request.resource.data);
+      allow update, delete: if false;
     }
 
     // Todo lo demás está cerrado.
