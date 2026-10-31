@@ -116,7 +116,7 @@ Landing ─────────┘ HTML estático (sin cambios para el visit
 
 ## Fase 4c: Imágenes y publicación
 
-### [ ] T20. Worker de Cloudflare (`workers/nexbytes-api`)
+### [x] T20. Worker de Cloudflare (`workers/nexbytes-api`)
 - Proyecto con Wrangler, binding al bucket R2 y secretos `GITHUB_TOKEN` (fine-grained, solo permiso para disparar el workflow de este repo), `GITHUB_REPO` y `ADMIN_UID`.
 - Middleware: verifica el ID token de Firebase (firma con las llaves públicas de Google, `aud` = project ID, `iss` correcto, no expirado; usa `jose`) y que el `uid` sea `ADMIN_UID`. CORS solo para los dominios del sitio y localhost.
 - `POST /upload`: recibe el archivo (multipart). Solo acepta WebP o AVIF de hasta 2 MB y prefijos permitidos (`proyectos/`, `nosotros/`, `seo/`, `general/`).

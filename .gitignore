@@ -30,3 +30,7 @@ pnpm-debug.log*
 # Playwright
 test-results/
 playwright-report/
+
+# Cloudflare Workers: estado local de wrangler y secretos de desarrollo
+.wrangler/
+.dev.vars

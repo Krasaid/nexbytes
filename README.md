@@ -148,6 +148,67 @@ Si agregas un script `is:inline`, su hash no se calcula solo. Agrégalo con `Ast
 
 > En Windows, el emulador de Hosting (`firebase emulators:start --only hosting`) **no aplica** los `headers` de `firebase.json`: arma los patrones con `\` en lugar de `/`. Los headers se revisan en el canal de preview: `curl -I <url>`.
 
+## API del admin (Cloudflare Worker)
+
+`workers/nexbytes-api` es el backend del admin. Verifica el ID token de Firebase de la cuenta admin (firma de Google, `aud`/`iss` del proyecto `nexbytes`, sin vencer, UID de `ADMIN_UID`) y luego:
+
+| Ruta | Qué hace |
+| --- | --- |
+| `POST /upload` | Multipart con `archivo`, `prefijo` (`proyectos`, `nosotros`, `seo` o `general`) y `slug` opcional. Solo WebP o AVIF **reales** (revisa los primeros bytes, no el `Content-Type`), hasta 2 MB. Guarda `<prefijo>/<slug>-<hash>.<webp\|avif>` en el bucket `nexbytes` y responde `201 { path }`. |
+| `DELETE /upload` | JSON `{ path }`. Solo rutas dentro de esos prefijos. `204`. |
+| `POST /publish` | JSON `{ publicacionId, tipo }` → `repository_dispatch` "publicar" en GitHub. Sin `GITHUB_TOKEN` responde `503 { error: "Publicación automática no configurada" }`. |
+
+CORS: `http://localhost:4321`, `https://nexbytes1.web.app` y los canales de preview `https://nexbytes1--*.web.app` (`ALLOWED_ORIGINS` en `wrangler.jsonc`). Otro origen recibe `403`.
+
+### Pruebas y desarrollo local
+
+```powershell
+cd workers/nexbytes-api
+npm install
+npm test        # runner de Vitest para Workers; R2 simulado, nunca toca el bucket real
+```
+
+Para `wrangler dev`, crea `workers/nexbytes-api/.dev.vars` (está en `.gitignore`):
+
+```
+ADMIN_UID=kcUUn8dbtDdrv50iXDHkcupN8t73
+GITHUB_REPO=Krasaid/nexbytes
+```
+
+`npm run dev` levanta el Worker en `http://localhost:8787` con un R2 **local** (no el bucket real).
+
+### Desplegar (desde PowerShell)
+
+Requiere `npx wrangler login` (ya hecho). Desde la carpeta del proyecto:
+
+```powershell
+cd workers/nexbytes-api
+npm install
+npx wrangler whoami                     # confirma la cuenta de Cloudflare
+npx wrangler deploy                     # crea el Worker "nexbytes-api" y muestra su URL
+"kcUUn8dbtDdrv50iXDHkcupN8t73" | npx wrangler secret put ADMIN_UID
+"Krasaid/nexbytes" | npx wrangler secret put GITHUB_REPO
+npx wrangler secret list                # deben aparecer ADMIN_UID y GITHUB_REPO
+cd ../..
+node scripts/configure-worker.mjs https://nexbytes-api.<tu-subdominio>.workers.dev
+```
+
+- `wrangler deploy` imprime la URL `https://nexbytes-api.<tu-subdominio>.workers.dev`; esa es la que va en `configure-worker.mjs`, que la guarda en `.env` como `PUBLIC_API_URL` (la usará el admin en T21).
+- Entre el `deploy` y los secretos, el Worker rechaza todo con 401 (sin `ADMIN_UID` no acepta a nadie). Cada `secret put` publica una nueva versión al momento.
+- Comprobación rápida: `curl.exe -s -X POST https://nexbytes-api.<tu-subdominio>.workers.dev/upload` debe responder `{"error":"Debes iniciar sesión."}`. Los registros en vivo: `npx wrangler tail` (dentro de `workers/nexbytes-api`).
+
+### Cuando GitHub Actions vuelva a funcionar
+
+1. En GitHub → Settings → Developer settings → **Fine-grained tokens** → Generate new token: solo el repositorio `Krasaid/nexbytes`, permiso **Contents: Read and write** (lo exige `repository_dispatch`) y una fecha de vencimiento.
+2. Cárgalo (pega el token cuando lo pida; no queda en el historial de PowerShell):
+
+   ```powershell
+   cd workers/nexbytes-api
+   npx wrangler secret put GITHUB_TOKEN
+   ```
+
+3. Reactiva el workflow: `gh workflow enable deploy.yml`.
+
 ## Imágenes en Cloudflare R2
 
 En los JSON las imágenes van como ruta relativa (`proyectos/foto.webp`). `cdn()` les antepone `PUBLIC_CDN_URL`.

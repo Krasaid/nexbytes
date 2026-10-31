@@ -5,6 +5,8 @@ interface ImportMetaEnv {
   readonly PUBLIC_FIREBASE_PROJECT_ID: string;
   readonly PUBLIC_FIREBASE_APP_ID: string;
   readonly PUBLIC_RECAPTCHA_SITE_KEY: string;
+  /** URL del Worker workers/nexbytes-api (subida de imágenes y publicación). */
+  readonly PUBLIC_API_URL?: string;
   /** Solo desarrollo: "host:puerto" del emulador de Firestore. */
   readonly PUBLIC_FIRESTORE_EMULATOR?: string;
   /** Solo desarrollo: "host:puerto" del emulador de Auth (admin). */

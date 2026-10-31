@@ -1,0 +1,16 @@
+{
+  // Worker de la API del admin de Nexbytes: subida de imágenes a R2 y publicación (T20).
+  // Secretos (wrangler secret put, ver README): ADMIN_UID, GITHUB_REPO y GITHUB_TOKEN.
+  // En local van en .dev.vars (fuera del repo).
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "nexbytes-api",
+  "main": "src/index.ts",
+  "compatibility_date": "2026-08-01",
+  "observability": { "enabled": true },
+  "r2_buckets": [{ "binding": "BUCKET", "bucket_name": "nexbytes" }],
+  "vars": {
+    "FIREBASE_PROJECT_ID": "nexbytes",
+    // Separados por coma; * vale por un tramo de letras, números y guiones (canales de preview).
+    "ALLOWED_ORIGINS": "http://localhost:4321,https://nexbytes1.web.app,https://nexbytes1--*.web.app"
+  }
+}
