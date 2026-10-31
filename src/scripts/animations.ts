@@ -14,7 +14,7 @@
  * - El HTML nunca oculta nada. Un script inline en Base.astro agrega la clase
  *   `anim` a <html> (solo con JS y sin movimiento reducido) y global.css oculta
  *   los estados iniciales bajo esa clase. Si este módulo no llega a correr,
- *   el script inline quita la clase a los 3 s y todo queda visible.
+ *   el script inline quita la clase a los 1.5 s y todo queda visible.
  * - Solo se animan opacity y transform: no hay saltos de layout (CLS = 0).
  * - El título y el subtítulo del hero nunca pasan por opacity 0: son el LCP y
  *   deben pintarse con el primer render, aunque el JS tarde en llegar.

@@ -131,12 +131,6 @@ Todas viven en `src/components/sections/`, reciben sus datos de `content.ts` des
 
 ---
 
-## Fase 4: CMS (se detalla cuando terminemos la landing)
+## Fase 4: CMS
 
-Se deja anotado para no perder el rumbo:
-- Panel `/admin` (o app aparte) con Firebase Auth, acceso solo para tu cuenta (custom claim `admin`).
-- Un editor por cada bloque de `schemas.ts` (mismos schemas zod que valida la landing).
-- Subida de imágenes a R2 con URLs firmadas (Cloud Function o Worker).
-- Bandeja de **cotizaciones** y **lista de espera** con cambio de estado (nuevo → contactado → propuesta → ganado/perdido).
-- Botón **Publicar**: guarda el contenido en Firestore y dispara un rebuild (GitHub Action con `firebase deploy`). `content.ts` pasa a leer Firestore en build.
-- Reutilizar lo que ya funciona del CMS del portafolio.
+Detallada en [`docs/TAREAS-CMS.md`](TAREAS-CMS.md) (tareas T14–T24).
