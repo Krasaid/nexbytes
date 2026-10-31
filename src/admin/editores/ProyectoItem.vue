@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { watch } from 'vue';
+import { computed, watch } from 'vue';
 
 import ImageField from '../fields/ImageField.vue';
 import TagsField from '../fields/TagsField.vue';
@@ -10,9 +10,17 @@ import { useCampo } from '../formulario';
 import { esSlugAutomatico, slugDe, slugUnico } from '../slug';
 import { textos } from '../textos';
 
-// Campos de un proyecto de la lista (`items.N`). El slug sigue al título
-// mientras no se haya editado a mano, y nunca repite el de otro proyecto.
-const props = defineProps<{ ruta: string; indice: number }>();
+// Campos de un proyecto de la lista (`items.N`).
+// - Proyecto nuevo (aún sin guardar): el slug sigue al título mientras no se
+//   edite a mano, y nunca repite el de otro proyecto.
+// - Proyecto ya guardado: el título no toca el slug; editarlo a mano avisa que
+//   puede romper enlaces compartidos.
+const props = defineProps<{
+  ruta: string;
+  indice: number;
+  /** Slug con el que está guardado en el borrador; undefined si el proyecto es nuevo. */
+  slugGuardado?: string;
+}>();
 
 const t = textos.bloquesEditor.proyectos;
 const titulo = useCampo(() => `${props.ruta}.titulo`);
@@ -29,16 +37,25 @@ function slugsDeOtros(): string[] {
 watch(
   () => [props.ruta, (titulo.valor.value as string | undefined) ?? ''] as const,
   ([ruta, nuevo], [rutaAntes, antes]) => {
-    if (ruta !== rutaAntes || nuevo === antes) return;
+    if (ruta !== rutaAntes || nuevo === antes || props.slugGuardado !== undefined) return;
     const actual = (slug.valor.value as string | undefined) ?? '';
     if (esSlugAutomatico(actual, antes)) slug.valor.value = slugUnico(slugDe(nuevo), slugsDeOtros());
   },
+);
+
+const avisoSlug = computed(() =>
+  props.slugGuardado !== undefined && slug.valor.value !== props.slugGuardado ? t.slugCambiado : undefined,
 );
 </script>
 
 <template>
   <TextField :ruta="`${ruta}.titulo`" :etiqueta="t.titulo" />
-  <TextField :ruta="`${ruta}.slug`" :etiqueta="t.slug" :ayuda="t.slugAyuda" />
+  <TextField
+    :ruta="`${ruta}.slug`"
+    :etiqueta="t.slug"
+    :ayuda="slugGuardado === undefined ? t.slugAyuda : t.slugAyudaGuardado"
+    :aviso="avisoSlug"
+  />
   <TextField :ruta="`${ruta}.etiqueta`" :etiqueta="t.etiqueta" />
   <UrlField :ruta="`${ruta}.url`" :etiqueta="t.url" />
   <TextArea class="ancho" :ruta="`${ruta}.resumen`" :etiqueta="t.resumen" />

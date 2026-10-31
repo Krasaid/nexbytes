@@ -10,6 +10,8 @@ const props = defineProps<{
   ayuda?: string;
   /** Largo recomendado (aparte del máximo del schema): el contador cambia de color al pasarlo. */
   recomendado?: number;
+  /** Advertencia que no impide guardar. */
+  aviso?: string;
   tipo?: 'text' | 'email' | 'tel';
   autocompletar?: string;
 }>();
@@ -22,7 +24,7 @@ const texto = computed({
 </script>
 
 <template>
-  <CampoBase v-slot="{ describedby }" :id="id" :etiqueta="etiqueta" :ayuda="ayuda" :error="error" :limites="limites" :largo="texto.length" :recomendado="recomendado">
+  <CampoBase v-slot="{ describedby }" :id="id" :etiqueta="etiqueta" :ayuda="ayuda" :error="error" :limites="limites" :largo="texto.length" :recomendado="recomendado" :aviso="aviso">
     <input
       :id="id"
       v-model="texto"

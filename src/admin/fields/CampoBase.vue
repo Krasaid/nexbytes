@@ -17,6 +17,8 @@ const props = defineProps<{
   largo?: number;
   /** Largo recomendado: el contador lo avisa al pasarlo, pero no impide guardar. */
   recomendado?: number;
+  /** Advertencia que no impide guardar (por ejemplo, cambiar un slug publicado). */
+  aviso?: string;
 }>();
 
 const t = textos.campos;
@@ -31,7 +33,7 @@ const contador = computed(() =>
     : { visible: t.contador(props.largo!, props.limites.max!), lector: t.contadorLector(props.largo!, props.limites.max!) },
 );
 const describedby = computed(() =>
-  describirPor(props.id, { ayuda: props.ayuda, contador: conContador.value, error: props.error }),
+  describirPor(props.id, { ayuda: props.ayuda, contador: conContador.value, aviso: props.aviso, error: props.error }),
 );
 </script>
 
@@ -55,6 +57,7 @@ const describedby = computed(() =>
     </div>
     <p v-if="ayuda" :id="`${id}-ayuda`" class="ayuda">{{ ayuda }}</p>
     <slot :describedby="describedby" />
+    <p v-if="aviso" :id="`${id}-aviso`" class="aviso-campo" role="status">{{ aviso }}</p>
     <p v-if="error" :id="`${id}-error`" class="error">{{ error }}</p>
   </div>
 </template>
@@ -106,7 +109,8 @@ label {
   color: var(--muted);
 }
 
-.error {
+.error,
+.aviso-campo {
   font-size: var(--text-label);
   color: var(--gold-light);
 }

@@ -47,7 +47,7 @@ test.describe('proyectos', () => {
   const items = (page: Page) => proyectos(page).locator(':scope > ol > li');
   const item = (page: Page, i: number) => items(page).nth(i);
 
-  test('el slug sigue al título hasta que se edita a mano, y nunca se repite', async ({ page }) => {
+  test('en un proyecto nuevo el slug sigue al título hasta que se edita a mano, y nunca se repite', async ({ page }) => {
     await abrir(page, 'proyectos');
     await proyectos(page).getByRole('button', { name: lista.agregar(t.proyectos.item) }).click();
     const nuevo = item(page, 4);
@@ -85,6 +85,42 @@ test.describe('proyectos', () => {
     await expect(estado(page)).toHaveText(textos.editor.estado.guardado(2));
     const guardado = (await borrador('proyectos')).items.at(-1) as Proyecto;
     expect(guardado).toMatchObject({ slug: 'tienda-cafe', titulo: 'Tienda online de café', visible: false, orden: 5 });
+
+    // Ya guardado, el título deja de mover el slug.
+    await tituloCampo.fill('Tienda online');
+    await expect(slug).toHaveValue('tienda-cafe');
+    await expect(nuevo.getByText(t.proyectos.slugCambiado)).toHaveCount(0);
+  });
+
+  test('en un proyecto guardado el título no cambia el slug, y editarlo a mano avisa', async ({ page }) => {
+    await abrir(page, 'proyectos');
+    const primero = item(page, 0);
+    const tituloCampo = primero.getByLabel(t.proyectos.titulo, { exact: true });
+    const slug = primero.getByLabel(t.proyectos.slug);
+    await expect(slug).toHaveValue('wp-producciones');
+    await expect(primero.getByText(t.proyectos.slugAyudaGuardado)).toBeVisible();
+
+    await tituloCampo.fill('WP Producciones Eventos');
+    await expect(slug).toHaveValue('wp-producciones');
+    await expect(primero.getByText(t.proyectos.slugCambiado)).toHaveCount(0);
+
+    await slug.fill('wp-eventos');
+    const aviso = primero.getByText(t.proyectos.slugCambiado);
+    await expect(aviso).toBeVisible();
+    expect(await slug.getAttribute('aria-describedby')).toContain(await aviso.getAttribute('id'));
+
+    // El aviso no impide guardar.
+    await guardar(page).click();
+    await expect(estado(page)).toHaveText(textos.editor.estado.guardado(2));
+    expect(((await borrador('proyectos')).items as Proyecto[])[0].slug).toBe('wp-eventos');
+    // Lo guardado es el nuevo punto de partida: ya no hay aviso.
+    await expect(primero.getByText(t.proyectos.slugCambiado)).toHaveCount(0);
+
+    // Volver al slug guardado también quita el aviso.
+    await slug.fill('wp-otro');
+    await expect(primero.getByText(t.proyectos.slugCambiado)).toBeVisible();
+    await slug.fill('wp-eventos');
+    await expect(primero.getByText(t.proyectos.slugCambiado)).toHaveCount(0);
   });
 
   test('el orden se maneja con subir y bajar, sin números, y se guarda como 1, 2, 3…', async ({ page }) => {

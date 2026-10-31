@@ -95,11 +95,15 @@ export function useCampo(ruta: MaybeRefOrGetter<string>) {
   };
 }
 
-/** ids para aria-describedby: ayuda, contador y error, solo los que existen. */
-export function describirPor(id: string, partes: { ayuda?: unknown; contador?: unknown; error?: unknown }): string | undefined {
+/** ids para aria-describedby: ayuda, contador, aviso y error, solo los que existen. */
+export function describirPor(
+  id: string,
+  partes: { ayuda?: unknown; contador?: unknown; aviso?: unknown; error?: unknown },
+): string | undefined {
   const ids = [
     partes.ayuda ? `${id}-ayuda` : '',
     partes.contador ? `${id}-contador` : '',
+    partes.aviso ? `${id}-aviso` : '',
     partes.error ? `${id}-error` : '',
   ].filter(Boolean);
   return ids.length ? ids.join(' ') : undefined;
