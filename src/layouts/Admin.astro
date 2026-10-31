@@ -1,0 +1,34 @@
+---
+// Layout del panel /admin. Va aparte de Base.astro: sin Open Graph, sin
+// animaciones y con su propia CSP, para que la de la landing no se afloje.
+import '@fontsource/space-grotesk/400.css';
+import '@fontsource/space-grotesk/500.css';
+import '@fontsource/space-grotesk/600.css';
+import '@fontsource/jetbrains-mono/400.css';
+import '@fontsource/jetbrains-mono/500.css';
+import '../styles/global.css';
+import '../admin/admin.css';
+import { textos } from '../admin/textos';
+
+// Solo esta página: Firebase Auth (inicio de sesión y renovación del token).
+// Astro lo suma al connect-src de astro.config.mjs; el de las demás páginas no cambia.
+Astro.csp?.insertDirective(
+  'connect-src https://identitytoolkit.googleapis.com https://securetoken.googleapis.com',
+);
+---
+
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="robots" content="noindex, nofollow" />
+    <meta name="color-scheme" content="dark" />
+    <title>{textos.tituloPagina}</title>
+    <link rel="icon" href="/favicon.ico" sizes="32x32" />
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+  </head>
+  <body>
+    <slot />
+  </body>
+</html>

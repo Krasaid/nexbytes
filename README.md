@@ -33,12 +33,19 @@ Variables de `.env` (ver `.env.example`):
 | `npm test` | Pruebas unitarias (Vitest) |
 | `npm run test:rules` | Pruebas de `firestore.rules` contra el emulador (necesita Java 21+) |
 | `npm run seed` | Valida los JSON de `src/content/data/` y los sube a Firestore (`borradores` y `publicado`). Pide confirmación antes de sobrescribir; `npm run seed -- --dry-run` solo muestra lo que haría |
+| `npm run test:e2e` | Pruebas del panel `/admin` en el navegador (Playwright) contra los emuladores de Auth y Firestore. Nunca toca el proyecto real |
 | `npm run emulators` | Emulador de Firestore para probar formularios en local |
 | `npm run deploy:preview` | Pruebas + build + canal de vista previa `preview` (vence en 7 días) |
 | `npm run deploy` | Pruebas + build + publicar en producción |
 | `npm run deploy:cms` | Pruebas + build **desde Firestore** (`publicado`) + publicar en producción. Es el "Publicar" manual mientras GitHub Actions no corre |
 | `npm run deploy:cms:preview` | Igual, pero desde `borradores` y al canal `preview` (vence en 7 días) |
 | `npm run deploy:rules` | Publicar `firestore.rules` |
+
+## Panel de administración (`/admin`)
+
+Se entra con la cuenta de correo y contraseña de administración (la del UID de `firestore.rules`). Cualquier otra cuenta ve "Sin acceso" y se le cierra la sesión. La sesión dura mientras la pestaña esté abierta.
+
+Para probarlo en local sin tocar el proyecto real, `npm run test:e2e` levanta los emuladores, crea las cuentas de prueba y recorre el panel (login, sin acceso, recarga, menú móvil y teclado).
 
 ## Despliegue
 

@@ -1,0 +1,19 @@
+---
+import AdminLayout from '../../layouts/Admin.astro';
+import { textos } from '../../admin/textos';
+---
+
+<AdminLayout>
+  <div id="admin"></div>
+  <noscript><p class="sin-js">{textos.sinJavascript}</p></noscript>
+  <script>
+    import '../../admin/main';
+  </script>
+</AdminLayout>
+
+<style>
+  .sin-js {
+    padding: var(--space-8) var(--gutter);
+    color: var(--muted);
+  }
+</style>

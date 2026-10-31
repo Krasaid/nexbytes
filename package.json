@@ -12,6 +12,7 @@
     "astro": "astro",
     "test": "vitest run tests/unit",
     "test:rules": "node scripts/test-rules.mjs",
+    "test:e2e": "node scripts/test-e2e.mjs",
     "seed": "tsx scripts/seed.ts",
     "emulators": "firebase emulators:start --only firestore",
     "deploy": "npm test && npm run build && firebase deploy --only hosting",
@@ -31,10 +32,12 @@
     "gsap": "^3.15.0",
     "typescript": "^6.0.3",
     "vue": "^3.5.44",
+    "vue-router": "^5.4.0",
     "zod": "^4.6.7"
   },
   "devDependencies": {
     "@firebase/rules-unit-testing": "^6.0.0",
+    "@playwright/test": "^1.64.1",
     "firebase-admin": "^14.5.0",
     "tsx": "^4.23.15",
     "vitest": "^5.0.5"

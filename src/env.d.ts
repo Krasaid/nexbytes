@@ -7,6 +7,8 @@ interface ImportMetaEnv {
   readonly PUBLIC_RECAPTCHA_SITE_KEY: string;
   /** Solo desarrollo: "host:puerto" del emulador de Firestore. */
   readonly PUBLIC_FIRESTORE_EMULATOR?: string;
+  /** Solo desarrollo: "host:puerto" del emulador de Auth (admin). */
+  readonly PUBLIC_AUTH_EMULATOR?: string;
   /** Solo build: local (por defecto), firestore o firestore-borradores. Ver src/lib/content.ts. */
   readonly CONTENT_SOURCE?: string;
   /** Solo build y npm run seed: ruta al JSON de la cuenta de servicio (fuera del repo). */

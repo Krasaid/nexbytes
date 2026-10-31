@@ -91,7 +91,7 @@ Landing ─────────┘ HTML estático (sin cambios para el visit
 
 ## Fase 4b: Panel admin
 
-### [ ] T17. Base del admin y acceso
+### [x] T17. Base del admin y acceso
 - Ruta `/admin` con una SPA de Vue (`client:only="vue"`) y su propio layout. Se excluye del sitemap, lleva `noindex` y su CSP permite Firebase Auth.
 - Login con el mismo proveedor con el que se creó el UID `kcUUn8dbtDdrv50iXDHkcupN8t73`. Si otra cuenta inicia sesión: mensaje "Sin acceso" y cierre de sesión.
 - Router interno (vue-router en modo hash o `history` con fallback en `firebase.json`).

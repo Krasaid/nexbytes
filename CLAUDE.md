@@ -81,10 +81,11 @@ src/
     ui/                # Icon, Logo, Button, SectionHeader, Placeholder
     sections/          # una por bloque de la landing (Nav, Hero, …, Footer)
     islands/           # Cotizador.vue, ListaEspera.vue
+  admin/               # SPA del panel /admin (Vue + vue-router): textos.ts, acceso.ts, sesion.ts, cambios.ts, vistas/
   scripts/
     animations.ts
     anim-flag.js       # script inline que activa los estados iniciales de animación
-  pages/               # index.astro, 404.astro, robots.txt.ts
+  pages/               # index.astro, 404.astro, robots.txt.ts, admin/index.astro
 ```
 
 ## Cómo encajan las piezas
@@ -97,6 +98,7 @@ src/
 - **Animaciones sin ocultar contenido:** `anim-flag.js` (inline al inicio del `<body>`) agrega la clase `anim` a `<html>` solo si hay JS y no hay movimiento reducido; `global.css` oculta estados iniciales **solo** bajo `.anim`; `animations.ts` marca `data-anim-ready` y, si no corre en 1.5 s, el flag quita la clase. El hero (`data-anim-scope="hero"`) usa una línea de tiempo de entrada, no ScrollTrigger, y su título/subtítulo nunca pasan por `opacity: 0` (son el LCP).
 - **CSP:** Astro la genera en un `<meta>` con hashes (`security.csp` en `astro.config.mjs`). Un script `is:inline` nuevo necesita su hash con `Astro.csp.insertScriptHash()` (ver `Base.astro`); un origen externo nuevo va en las directivas de `astro.config.mjs`. `frame-ancestors` y demás headers viven en `firebase.json`. El origen de `PUBLIC_CDN_URL` entra solo a `img-src`/`media-src`.
 - **Despliegue automático:** `.github/workflows/deploy.yml` (push a `main`, `repository_dispatch` `publicar` o manual). `tipo: produccion` → `CONTENT_SOURCE=firestore` + `firebase deploy`; `tipo: preview` → `firestore-borradores` + canal `preview`. Con `publicacionId`, `scripts/publicacion.mjs` (sin dependencias, REST de Firestore) mueve `publicaciones/{id}` a `construyendo` → `publicada`/`error`. Los valores del payload solo entran a los scripts como variables de entorno, nunca con `${{ }}` dentro de `run:`. Secretos y variables: README.
+- **Panel `/admin`:** `pages/admin/index.astro` + `layouts/Admin.astro` montan la SPA con un `<script>` (`src/admin/main.ts`), no con `client:only`: instalar vue-router con `appEntrypoint` lo metería en las islas de la landing. Router en modo hash (`/admin#/contenido/hero`), sin rewrites. Login con correo y contraseña, persistencia de sesión por pestaña; `ADMIN_UID` en `src/admin/acceso.ts` es el mismo de `isAdmin()` en `firestore.rules` (una prueba unitaria lo compara). Otra cuenta ve "Sin acceso" y se le cierra la sesión. Usa la app de `src/lib/firebase.ts` (`getFirebaseApp()`, con App Check) con Auth y Firestore completo (`onSnapshot`). Su CSP se amplía solo en esa página con `Astro.csp.insertDirective` (Auth); la de la landing no cambia. Fuera del sitemap, `Disallow` en robots y `X-Robots-Tag` en `firebase.json`.
 - **URL del sitio:** `site` en `astro.config.mjs` define canonical, Open Graph, sitemap y `robots.txt`.
 
 ## Comandos
@@ -107,6 +109,7 @@ src/
 - `npx astro check`: chequeo de tipos de `.astro`/`.ts` (no hay linter configurado)
 - `npm test`: pruebas unitarias (Vitest, `tests/unit`). Una sola: `npx vitest run tests/unit/whatsapp.test.ts -t "nombre del test"`
 - `npm run test:rules`: pruebas de `firestore.rules` con el emulador (`tests/rules`, proyecto `demo-nexbytes`, necesita Java 21+). `scripts/test-rules.mjs` cierra el proceso java que el emulador deja vivo en Windows
+- `npm run test:e2e`: pruebas del admin en el navegador (Playwright, `tests/e2e`) contra los emuladores de Auth y Firestore, con proyecto `demo-nexbytes`. Una sola: `npm run test:e2e -- -g "nombre del test"`
 - `npm run seed`: valida los JSON y los sube a `borradores` y `publicado` (firebase-admin, `GOOGLE_APPLICATION_CREDENTIALS`). `--dry-run` muestra lo que haría; `--yes` no pregunta; con `FIRESTORE_EMULATOR_HOST` escribe en el emulador
 - `node scripts/publicacion.mjs solicitar preview` crea una solicitud de prueba en `publicaciones/` (imprime el id); `ver <id>` muestra cómo quedó. Para probar el workflow: `gh workflow run deploy.yml -f tipo=preview -f publicacionId=<id>`
 - `npm run emulators`: emulador de Firestore para probar los formularios en local (con `PUBLIC_FIRESTORE_EMULATOR` en `.env`)
@@ -125,7 +128,7 @@ PUBLIC_FIREBASE_AUTH_DOMAIN=
 PUBLIC_FIREBASE_PROJECT_ID=
 PUBLIC_FIREBASE_APP_ID=
 PUBLIC_RECAPTCHA_SITE_KEY=
-# Opcional, solo desarrollo: PUBLIC_FIRESTORE_EMULATOR=127.0.0.1:8080
+# Opcional, solo desarrollo: PUBLIC_FIRESTORE_EMULATOR=127.0.0.1:8080 y PUBLIC_AUTH_EMULATOR=127.0.0.1:9099
 # Solo para npm run seed y el build desde Firestore (ruta fuera del repo): GOOGLE_APPLICATION_CREDENTIALS=
 # Solo build: CONTENT_SOURCE=local | firestore | firestore-borradores (por defecto local)
 ```

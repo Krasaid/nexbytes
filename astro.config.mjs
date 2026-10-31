@@ -15,7 +15,7 @@ export default defineConfig({
   // Cámbiala cuando el dominio propio esté conectado.
   site: 'https://nexbytes1.web.app',
   output: 'static',
-  integrations: [vue(), sitemap({ filter: (page) => !page.includes('/404') })],
+  integrations: [vue(), sitemap({ filter: (page) => !page.includes('/404') && !page.includes('/admin') })],
 
   // CSP en un <meta> de cada página, con los hashes exactos de los scripts y
   // estilos inline que genera el build (sin 'unsafe-inline').
