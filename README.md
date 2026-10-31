@@ -73,6 +73,8 @@ npm run deploy:cms:preview   # vista previa con los borradores (canal "preview",
 npm run deploy:cms           # producción con lo publicado
 ```
 
+El panel también tiene la página **Publicar**: "Publicar" copia los borradores con cambios a lo publicado y pide el despliegue; "Vista previa", solo el despliegue con los borradores. Mientras Actions esté pausado, el panel avisa "Publicación automática no configurada" y dice qué comando correr; con "Publicar", los cambios ya quedan en lo publicado, así que basta `npm run deploy:cms`.
+
 Ojo: `npm run deploy` (sin `:cms`) construye con los JSON locales, no con Firestore. El contenido que se haya editado en el CMS se pisa en producción con lo que tengan los JSON.
 
 Cuando se resuelva la facturación: `gh workflow enable deploy.yml` y la prueba de abajo.

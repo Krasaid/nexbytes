@@ -134,7 +134,8 @@ service cloud.firestore {
     }
 
     // Historial de publicaciones. El admin las solicita; GitHub Actions (firebase-admin)
-    // cambia `estado` y agrega `terminadaEn`, `url` o `error`.
+    // cambia `estado` y agrega `terminadaEn`, `url` o `error`. El admin solo puede marcar
+    // como error una solicitud que no llegó a GitHub (por ejemplo, /publish respondió 503).
     match /publicaciones/{id} {
       function solicitudValida(d) {
         return d.keys().hasOnly(['estado', 'tipo', 'solicitadaEn'])
@@ -144,9 +145,18 @@ service cloud.firestore {
           && d.solicitadaEn == request.time;
       }
 
+      function marcaComoError(d) {
+        return resource.data.estado == 'solicitada'
+          && d.diff(resource.data).affectedKeys().hasOnly(['estado', 'error', 'terminadaEn'])
+          && d.estado == 'error'
+          && texto(d.error, 1, 300)
+          && d.terminadaEn == request.time;
+      }
+
       allow read: if isAdmin();
       allow create: if isAdmin() && solicitudValida(request.resource.data);
-      allow update, delete: if false;
+      allow update: if isAdmin() && marcaComoError(request.resource.data);
+      allow delete: if false;
     }
 
     // Todo lo demás está cerrado.

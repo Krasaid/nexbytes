@@ -13,6 +13,7 @@ import {
 
 import { useCambios } from '../cambios';
 import { getServicios } from '../firebase';
+import { estadoVisible } from '../publicar';
 import { textos } from '../textos';
 
 const t = textos.inicio;
@@ -24,7 +25,9 @@ const errorNuevas = ref(false);
 interface Publicacion {
   estado: string;
   tipo: string;
+  /** Visible: la de término, o la de solicitud si todavía no termina. */
   fecha?: Date;
+  solicitadaEn?: Date;
 }
 const ultima = ref<Publicacion | null | undefined>(undefined); // undefined = cargando, null = no hay
 const errorUltima = ref(false);
@@ -46,6 +49,7 @@ onMounted(async () => {
             estado: doc.get('estado'),
             tipo: doc.get('tipo'),
             fecha: ((doc.get('terminadaEn') ?? doc.get('solicitadaEn')) as Timestamp | undefined)?.toDate(),
+            solicitadaEn: (doc.get('solicitadaEn') as Timestamp | undefined)?.toDate(),
           }
         : null;
     })
@@ -72,7 +76,7 @@ onMounted(async () => {
       <p v-else-if="ultima === null" class="tenue">{{ t.sinPublicaciones }}</p>
       <template v-else>
         <p class="estado">
-          {{ textos.publicaciones.estados[ultima.estado] ?? ultima.estado }}
+          {{ textos.publicaciones.estados[estadoVisible({ id: '', ...ultima })] ?? ultima.estado }}
           <span class="tenue">· {{ textos.publicaciones.tipos[ultima.tipo] ?? ultima.tipo }}</span>
         </p>
         <p v-if="ultima.fecha" class="tenue">{{ fecha.format(ultima.fecha) }}</p>

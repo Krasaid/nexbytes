@@ -1,5 +1,6 @@
 /**
- * Llamadas del admin al Worker (workers/nexbytes-api), en PUBLIC_API_URL.
+ * Llamadas del admin al Worker (workers/nexbytes-api), en PUBLIC_API_URL:
+ * subir y borrar imágenes, y pedir una publicación.
  * Todas llevan el ID token de la sesión (Authorization: Bearer).
  *
  * La subida usa XMLHttpRequest y no fetch: fetch no informa el progreso de
@@ -13,7 +14,12 @@ const BASE = (import.meta.env.PUBLIC_API_URL ?? '').replace(/\/+$/, '');
 
 export type Prefijo = 'proyectos' | 'nosotros' | 'seo' | 'general';
 
-export class ErrorApi extends Error {}
+export class ErrorApi extends Error {
+  /** Código HTTP de la respuesta (0 si no hubo respuesta). */
+  constructor(mensaje: string, readonly estado = 0) {
+    super(mensaje);
+  }
+}
 
 async function tokenDeSesion(): Promise<string> {
   const usuario = getServicios().auth.currentUser;
@@ -53,7 +59,7 @@ export async function subirImagen(
     xhr.onload = () => {
       const path = (xhr.response as { path?: unknown } | null)?.path;
       if (xhr.status === 201 && typeof path === 'string') resolve(path);
-      else reject(new ErrorApi(mensajeDe(xhr.response, xhr.status)));
+      else reject(new ErrorApi(mensajeDe(xhr.response, xhr.status), xhr.status));
     };
     xhr.onerror = () => reject(new ErrorApi(t.red));
     xhr.send(formulario);
@@ -70,5 +76,22 @@ export async function borrarImagen(path: string): Promise<void> {
   }).catch(() => {
     throw new ErrorApi(t.red);
   });
-  if (respuesta.status !== 204) throw new ErrorApi(mensajeDe(await respuesta.json().catch(() => null), respuesta.status));
+  if (respuesta.status !== 204) {
+    throw new ErrorApi(mensajeDe(await respuesta.json().catch(() => null), respuesta.status), respuesta.status);
+  }
+}
+
+/** Pide al Worker que dispare el workflow de despliegue. 503 = publicación automática no configurada. */
+export async function solicitarPublicacion(publicacionId: string, tipo: 'produccion' | 'preview'): Promise<void> {
+  if (!BASE) throw new ErrorApi(t.sinApi);
+  const respuesta = await fetch(`${BASE}/publish`, {
+    method: 'POST',
+    headers: { Authorization: `Bearer ${await tokenDeSesion()}`, 'Content-Type': 'application/json' },
+    body: JSON.stringify({ publicacionId, tipo }),
+  }).catch(() => {
+    throw new ErrorApi(textos.publicar.red);
+  });
+  if (respuesta.status !== 202) {
+    throw new ErrorApi(mensajeDe(await respuesta.json().catch(() => null), respuesta.status), respuesta.status);
+  }
 }

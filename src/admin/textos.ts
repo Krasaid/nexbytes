@@ -79,12 +79,40 @@ export const textos = {
       construyendo: 'Construyendo',
       publicada: 'Publicada',
       error: 'Con error',
+      sinRespuesta: 'Sin respuesta',
     } as Record<string, string>,
     tipos: { produccion: 'Producción', preview: 'Vista previa' } as Record<string, string>,
   },
 
   pendiente: {
     texto: (tarea: string) => `Esta sección llega en la tarea ${tarea}.`,
+  },
+
+  publicar: {
+    titulo: 'Publicar',
+    descripcion:
+      'Vista previa construye el sitio con los borradores en un enlace temporal (7 días). Publicar copia los borradores a lo publicado y actualiza el sitio.',
+    cambios: 'Cambios sin publicar',
+    sinCambios: 'Todo el contenido está publicado.',
+    vistaPrevia: 'Vista previa',
+    publicar: 'Publicar',
+    trabajando: 'Enviando…',
+    enCurso: 'Hay una publicación en curso: espera a que termine para pedir otra.',
+    faltaBorrador: 'Este bloque no tiene borrador.',
+    invalidos: 'Hay bloques que no se pueden publicar. Corrígelos primero:',
+    actual: 'Última publicación',
+    historial: 'Historial',
+    sinHistorial: 'Todavía no hay publicaciones.',
+    abrirPreview: 'Abrir la vista previa',
+    abrirSitio: 'Ver el sitio',
+    solicitadaOk: 'Solicitud enviada. El estado se actualiza solo.',
+    copiaReintento: 'Un borrador cambió mientras se publicaba. Vuelve a intentarlo.',
+    errorGuardar: 'No se pudo registrar la publicación. Revisa tu conexión y vuelve a intentar.',
+    red: 'No se pudo contactar al servidor de publicación. Revisa tu conexión y vuelve a intentar.',
+    // Mientras GitHub Actions esté pausado, /publish responde 503 y se publica desde la terminal.
+    manualProduccion: 'Los cambios ya quedaron en lo publicado. Para actualizar el sitio, corre npm run deploy:cms en la terminal.',
+    manualPreview: 'Para generar la vista previa, corre npm run deploy:cms:preview en la terminal.',
+    columnas: { fecha: 'Fecha', tipo: 'Tipo', estado: 'Estado', resultado: 'Resultado' },
   },
 
   /** Errores de validación (los casos comunes de zod, en lenguaje claro). */
@@ -162,6 +190,11 @@ export const textos = {
       titulo: (nombre: string) => `¿Quitar ${nombre}?`,
       texto: 'Se quita del formulario. El cambio queda guardado cuando pulses Guardar.',
       accion: 'Quitar',
+    },
+    publicar: {
+      titulo: '¿Publicar los cambios en el sitio?',
+      texto: (bloques: string) => `Se copian a lo publicado: ${bloques}. Después el sitio se reconstruye.`,
+      accion: 'Publicar',
     },
     borrarImagen: {
       titulo: '¿Borrar la imagen del almacenamiento?',

@@ -12,6 +12,7 @@ import { textos } from './textos';
 import Contenido from './vistas/Contenido.vue';
 import Inicio from './vistas/Inicio.vue';
 import Pendiente from './vistas/Pendiente.vue';
+import Publicar from './vistas/Publicar.vue';
 
 declare module 'vue-router' {
   interface RouteMeta {
@@ -45,7 +46,7 @@ export const router = createRouter({
       component: Pendiente,
       meta: { titulo: () => textos.shell.listaEspera, tarea: 'T23' },
     },
-    { path: '/publicar', name: 'publicar', component: Pendiente, meta: { titulo: () => textos.shell.publicar, tarea: 'T22' } },
+    { path: '/publicar', name: 'publicar', component: Publicar, meta: { titulo: () => textos.shell.publicar } },
     { path: '/:pathMatch(.*)*', redirect: { name: 'inicio' } },
   ],
 });

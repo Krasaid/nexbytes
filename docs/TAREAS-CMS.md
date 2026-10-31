@@ -131,7 +131,9 @@ Landing ─────────┘ HTML estático (sin cambios para el visit
 - Muestra progreso, vista previa, peso final y botón para quitar. Al quitar, solo se borra la referencia del campo; borrar en R2 es un botón aparte, con confirmación.
 - Campo de texto alternativo (`alt`) obligatorio junto a cada imagen. Agrégalo a los schemas donde haga falta.
 
-### [ ] T22. Botón Publicar
+### [x] T22. Botón Publicar
+> Probado con el Worker simulado. Mientras GitHub Actions siga pausado, `/publish` responde 503: la publicación queda marcada como error y el panel indica correr `npm run deploy:cms` (o `:preview`). Las reglas suman una única transición del admin: `solicitada` → `error`.
+
 - Página **Publicar**: lista de bloques con cambios (version de borrador > publicado) y dos botones:
   - **Vista previa**: crea `publicaciones/{id}` con `tipo: preview` y llama a `/publish`. El workflow construye desde los borradores (`firestore-borradores`, ya preparado en T15 y T16) y despliega a un canal de preview.
   - **Publicar**: valida todos los borradores con zod, los copia a `publicado` en un batch, crea `publicaciones/{id}` con `tipo: produccion` y llama a `/publish`.

@@ -358,6 +358,32 @@ describe('publicaciones', () => {
     await assertFails(addDoc(col, { ...solicitud(), solicitadaEn: new Date() }));
   });
 
+  it('el admin puede marcar como error una solicitud que no llegó a GitHub', async () => {
+    await sembrar('publicaciones', 'p1', { estado: 'solicitada', tipo: 'produccion', solicitadaEn: new Date() });
+    await assertSucceeds(
+      updateDoc(doc(admin(), 'publicaciones', 'p1'), {
+        estado: 'error',
+        error: 'Publicación automática no configurada',
+        terminadaEn: serverTimestamp(),
+      }),
+    );
+  });
+
+  it('solo esa transición: nada de publicada, url, otro estado de origen, fecha del cliente ni mensajes largos', async () => {
+    await sembrar('publicaciones', 'p1', { estado: 'solicitada', tipo: 'produccion', solicitadaEn: new Date() });
+    await sembrar('publicaciones', 'p2', { estado: 'construyendo', tipo: 'produccion', solicitadaEn: new Date() });
+    const ref = doc(admin(), 'publicaciones', 'p1');
+    const error = { estado: 'error', error: 'falló', terminadaEn: serverTimestamp() };
+    await assertFails(updateDoc(ref, { estado: 'publicada', terminadaEn: serverTimestamp() }));
+    await assertFails(updateDoc(ref, { ...error, url: 'https://x.web.app' }));
+    await assertFails(updateDoc(ref, { ...error, tipo: 'preview' }));
+    await assertFails(updateDoc(ref, { ...error, terminadaEn: new Date() }));
+    await assertFails(updateDoc(ref, { ...error, error: 'x'.repeat(301) }));
+    await assertFails(updateDoc(ref, { ...error, error: '' }));
+    await assertFails(updateDoc(doc(admin(), 'publicaciones', 'p2'), error)); // ya la tomó GitHub Actions
+    await assertFails(updateDoc(doc(otroUsuario(), 'publicaciones', 'p1'), error));
+  });
+
   it('el admin lee el historial pero no lo edita ni lo borra', async () => {
     await sembrar('publicaciones', 'p1', { estado: 'construyendo', tipo: 'preview', solicitadaEn: new Date() });
     await assertSucceeds(getDoc(doc(admin(), 'publicaciones', 'p1')));
