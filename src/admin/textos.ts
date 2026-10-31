@@ -192,6 +192,8 @@ export const textos = {
   editor: {
     noExiste: 'Este bloque todavía no tiene borrador. Créalo con npm run seed.',
     errorCarga: 'No se pudo cargar el borrador. Revisa tu conexión y recarga la página.',
+    sinPermiso:
+      'Firestore no deja leer el borrador. Revisa que las reglas estén publicadas (npm run deploy:rules) y que App Check acepte este navegador.',
     nota: 'Lo que guardas queda como borrador: el sitio cambia cuando publiques.',
     guardar: 'Guardar',
     guardando: 'Guardando…',

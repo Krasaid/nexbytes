@@ -34,6 +34,7 @@ async function pedirDescartar() {
   <p v-if="estado.fase === 'cargando'" class="tenue" role="status">{{ textos.cargando }}</p>
   <p v-else-if="estado.fase === 'noExiste'" class="aviso" role="alert">{{ t.noExiste }}</p>
   <p v-else-if="estado.fase === 'errorCarga'" class="aviso" role="alert">{{ t.errorCarga }}</p>
+  <p v-else-if="estado.fase === 'sinPermiso'" class="aviso" role="alert">{{ t.sinPermiso }}</p>
 
   <form v-else class="editor" novalidate @submit.prevent="guardar">
     <p class="nota">

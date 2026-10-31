@@ -18,7 +18,7 @@ import { BLOQUES, type Bloque } from '../lib/bloques';
 import { getServicios } from './firebase';
 import { crearFormulario, proveerFormulario } from './formulario';
 
-type Fase = 'cargando' | 'listo' | 'noExiste' | 'errorCarga';
+type Fase = 'cargando' | 'listo' | 'noExiste' | 'errorCarga' | 'sinPermiso';
 
 type Ajuste = (contenido: Record<string, unknown>) => Record<string, unknown>;
 export interface Ajustes {
@@ -77,8 +77,10 @@ export function useBloque(nombre: Bloque, ajustes: Ajustes = {}) {
       const { version, actualizadoEn: _actualizadoEn, ...contenido } = snap.data();
       aplicar(contenido, Number(version) || 0);
       estado.fase = 'listo';
-    } catch {
-      estado.fase = 'errorCarga';
+    } catch (error) {
+      // El mensaje de la pantalla es genérico; el motivo real (permisos, App Check, red) queda en la consola.
+      console.error(`[admin] No se pudo cargar borradores/${nombre}:`, error);
+      estado.fase = (error as { code?: string }).code === 'permission-denied' ? 'sinPermiso' : 'errorCarga';
     }
   }
 
