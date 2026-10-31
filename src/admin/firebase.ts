@@ -8,7 +8,7 @@
  *   los emuladores (así corren las pruebas de tests/e2e).
  */
 import { browserSessionPersistence, connectAuthEmulator, initializeAuth, type Auth } from 'firebase/auth';
-import { connectFirestoreEmulator, getFirestore, type Firestore } from 'firebase/firestore';
+import { connectFirestoreEmulator, initializeFirestore, type Firestore } from 'firebase/firestore';
 
 import { firestoreEmulador, getFirebaseApp } from '../lib/firebase';
 
@@ -22,7 +22,8 @@ export function getServicios(): { auth: Auth; db: Firestore } {
   const app = getFirebaseApp();
   // Sin popupRedirectResolver: el login es con correo y contraseña, no hacen falta iframes de Google.
   const auth = initializeAuth(app, { persistence: browserSessionPersistence });
-  const db = getFirestore(app);
+  // Un opcional sin valor no rompe la escritura: simplemente no se guarda.
+  const db = initializeFirestore(app, { ignoreUndefinedProperties: true });
 
   if (authEmulador) connectAuthEmulator(auth, `http://${authEmulador}`, { disableWarnings: true });
   if (firestoreEmulador) {

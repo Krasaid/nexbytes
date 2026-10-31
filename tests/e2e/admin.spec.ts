@@ -2,77 +2,31 @@
  * Panel /admin en el navegador, contra los emuladores (npm run test:e2e).
  * Siembra dos cuentas: la de administración (mismo UID que firestore.rules) y otra cualquiera.
  */
-import { readFileSync } from 'node:fs';
-import { expect, test, type Page } from '@playwright/test';
+import { expect, test } from '@playwright/test';
 
 import { textos } from '../../src/admin/textos';
+import { ADMIN, CONTRASENA, OTRA, db, entrar, nav, reiniciarEmuladores, titulo } from './apoyo';
 
-const AUTH = '127.0.0.1:9099';
-const FIRESTORE = '127.0.0.1:8080';
-const PROYECTO = 'demo-nexbytes';
-
-if (process.env.FIREBASE_AUTH_EMULATOR_HOST !== AUTH || process.env.FIRESTORE_EMULATOR_HOST !== FIRESTORE) {
-  throw new Error('Corre estas pruebas con npm run test:e2e: solo se permiten los emuladores locales.');
-}
-
-const ADMIN_UID = readFileSync('firestore.rules', 'utf8').match(/request\.auth\.uid == '([^']+)'/)![1];
-const ADMIN = 'admin@nexbytes.test';
-const OTRA = 'otra@ejemplo.test';
-const CONTRASENA = 'contrasena-de-prueba-123';
 const DORADO = 'rgb(212, 175, 55)';
 
-const docs = `http://${FIRESTORE}/v1/projects/${PROYECTO}/databases/(default)/documents`;
-const owner = { Authorization: 'Bearer owner' };
-
-/** Campos en el formato REST de Firestore. */
-function campos(datos: Record<string, string | number | Date>) {
-  return Object.fromEntries(
-    Object.entries(datos).map(([k, v]) => [
-      k,
-      typeof v === 'number' ? { integerValue: String(v) } : v instanceof Date ? { timestampValue: v.toISOString() } : { stringValue: v },
-    ]),
-  );
-}
-
 test.beforeAll(async ({ request }) => {
-  await request.delete(`http://${AUTH}/emulator/v1/projects/${PROYECTO}/accounts`);
-  await request.delete(`http://${FIRESTORE}/emulator/v1/projects/${PROYECTO}/databases/(default)/documents`);
-
-  for (const [localId, email] of [[ADMIN_UID, ADMIN], [undefined, OTRA]]) {
-    const r = await request.post(`http://${AUTH}/identitytoolkit.googleapis.com/v1/projects/${PROYECTO}/accounts`, {
-      headers: owner,
-      data: { localId, email, password: CONTRASENA },
-    });
-    expect(r.ok(), await r.text()).toBeTruthy();
-  }
+  await reiniciarEmuladores(request);
 
   // hero tiene cambios; servicios nunca se publicó; site está al día.
-  const documentos: [string, Record<string, string | number | Date>][] = [
-    ['borradores/site', { version: 2 }],
-    ['borradores/hero', { version: 3 }],
-    ['borradores/servicios', { version: 1 }],
-    ['publicado/site', { version: 2 }],
-    ['publicado/hero', { version: 2 }],
-    ['cotizaciones/c1', { estado: 'nuevo' }],
-    ['cotizaciones/c2', { estado: 'nuevo' }],
-    ['cotizaciones/c3', { estado: 'contactado' }],
-    ['publicaciones/p1', { estado: 'publicada', tipo: 'preview', solicitadaEn: new Date('2026-10-30T15:00:00Z') }],
-  ];
-  for (const [ruta, datos] of documentos) {
-    const r = await request.patch(`${docs}/${ruta}`, { headers: owner, data: { fields: campos(datos) } });
-    expect(r.ok(), await r.text()).toBeTruthy();
-  }
+  const d = db();
+  const ahora = new Date();
+  await Promise.all([
+    d.doc('borradores/site').set({ version: 2, actualizadoEn: ahora }),
+    d.doc('borradores/hero').set({ version: 3, actualizadoEn: ahora }),
+    d.doc('borradores/servicios').set({ version: 1, actualizadoEn: ahora }),
+    d.doc('publicado/site').set({ version: 2, actualizadoEn: ahora }),
+    d.doc('publicado/hero').set({ version: 2, actualizadoEn: ahora }),
+    d.doc('cotizaciones/c1').set({ estado: 'nuevo' }),
+    d.doc('cotizaciones/c2').set({ estado: 'nuevo' }),
+    d.doc('cotizaciones/c3').set({ estado: 'contactado' }),
+    d.doc('publicaciones/p1').set({ estado: 'publicada', tipo: 'preview', solicitadaEn: new Date('2026-10-30T15:00:00Z') }),
+  ]);
 });
-
-async function entrar(page: Page, correo = ADMIN, contrasena = CONTRASENA) {
-  await page.goto('/admin');
-  await page.getByLabel(textos.login.correo).fill(correo);
-  await page.getByLabel(textos.login.contrasena).fill(contrasena);
-  await page.getByRole('button', { name: textos.login.entrar }).click();
-}
-
-const titulo = (page: Page) => page.getByRole('heading', { level: 1 });
-const nav = (page: Page) => page.getByRole('navigation', { name: textos.shell.navegacion });
 
 test('la cuenta admin entra y ve el resumen', async ({ page }) => {
   await entrar(page);

@@ -29,6 +29,9 @@
   --gold-tint:  rgb(212 175 55 / 0.12);
   --on-gold:    var(--bg); /* texto sobre fondo dorado */
 
+  /* ── Capas ── */
+  --overlay: rgb(0 0 0 / 0.7); /* fondo detrás de un diálogo */
+
   /* ── Placeholder con cuadrícula (.ph) ── */
   --ph-bg:   #111112;
   --ph-grid: #1E1C18;

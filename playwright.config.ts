@@ -16,7 +16,8 @@ export default defineConfig({
     actionTimeout: 10_000,
   },
   webServer: {
-    command: `npx astro dev --host 127.0.0.1 --port ${PUERTO}`,
+    // --ignore-lock: corre junto a un `npm run dev` abierto sin reemplazarlo.
+    command: `npx astro dev --ignore-lock --host 127.0.0.1 --port ${PUERTO}`,
     url: `http://127.0.0.1:${PUERTO}/admin`,
     reuseExistingServer: false,
     timeout: 120_000,
@@ -29,6 +30,8 @@ export default defineConfig({
       PUBLIC_RECAPTCHA_SITE_KEY: 'demo',
       PUBLIC_AUTH_EMULATOR: '127.0.0.1:9099',
       PUBLIC_FIRESTORE_EMULATOR: '127.0.0.1:8080',
+      // Las "imágenes de R2" de las pruebas salen de public/ del propio servidor.
+      PUBLIC_CDN_URL: `http://127.0.0.1:${PUERTO}`,
       CONTENT_SOURCE: 'local',
     },
   },

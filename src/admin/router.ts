@@ -6,7 +6,10 @@
 import { createRouter, createWebHashHistory, type RouteLocationNormalized } from 'vue-router';
 
 import { NOMBRES_BLOQUES, type Bloque } from '../lib/bloques';
+import { hayCambiosSinGuardar } from './bloque';
+import { confirmar } from './confirmar';
 import { textos } from './textos';
+import Contenido from './vistas/Contenido.vue';
 import Inicio from './vistas/Inicio.vue';
 import Pendiente from './vistas/Pendiente.vue';
 
@@ -26,8 +29,8 @@ export const router = createRouter({
     {
       path: '/contenido/:bloque',
       name: 'contenido',
-      component: Pendiente,
-      meta: { titulo: (ruta) => textos.bloques[ruta.params.bloque as Bloque], tarea: 'T18/T19' },
+      component: Contenido,
+      meta: { titulo: (ruta) => textos.bloques[ruta.params.bloque as Bloque], tarea: 'T19' },
       beforeEnter: (ruta) => (NOMBRES_BLOQUES.includes(ruta.params.bloque as Bloque) ? true : { name: 'inicio' }),
     },
     {
@@ -45,6 +48,12 @@ export const router = createRouter({
     { path: '/publicar', name: 'publicar', component: Pendiente, meta: { titulo: () => textos.shell.publicar, tarea: 'T22' } },
     { path: '/:pathMatch(.*)*', redirect: { name: 'inicio' } },
   ],
+});
+
+// Salir de un editor con cambios sin guardar pide confirmación (también al cambiar de bloque).
+router.beforeEach(async (hacia, desde) => {
+  if (!hayCambiosSinGuardar.value || hacia.path === desde.path) return true;
+  return confirmar(textos.confirmar.salir);
 });
 
 router.afterEach((ruta) => {

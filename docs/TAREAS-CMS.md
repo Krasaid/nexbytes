@@ -98,7 +98,7 @@ Landing ─────────┘ HTML estático (sin cambios para el visit
 - Layout: barra lateral con **Contenido** (un enlace por bloque), **Bandeja** (Cotizaciones, Lista de espera) y **Publicar**. Arriba: indicador de "cambios sin publicar", usuario y cerrar sesión. En móvil, la barra lateral se vuelve menú.
 - La página de inicio del admin resume: cotizaciones nuevas, última publicación y si hay borradores sin publicar (comparando `version` de borradores contra publicado).
 
-### [ ] T18. Componentes de formulario + editores de Sitio y Hero
+### [x] T18. Componentes de formulario + editores de Sitio y Hero
 - Componentes en `src/admin/fields/`:
   - `TextField` y `TextArea`, con contador de caracteres cuando el schema tiene máximo;
   - `UrlField`, `SelectField`, `ToggleField`;

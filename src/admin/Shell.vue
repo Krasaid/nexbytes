@@ -3,7 +3,10 @@ import { nextTick, onBeforeUnmount, onMounted, ref } from 'vue';
 import { useRouter } from 'vue-router';
 
 import { NOMBRES_BLOQUES } from '../lib/bloques';
+import { hayCambiosSinGuardar } from './bloque';
 import { useCambios } from './cambios';
+import Confirmacion from './Confirmacion.vue';
+import { confirmar } from './confirmar';
 import { useSesion } from './sesion';
 import { textos } from './textos';
 
@@ -41,6 +44,12 @@ const quitarAfterEach = router.afterEach((hacia, desde) => {
   void nextTick(() => document.getElementById('admin-titulo')?.focus());
 });
 onBeforeUnmount(quitarAfterEach);
+
+async function cerrarSesion() {
+  if (hayCambiosSinGuardar.value && !(await confirmar(textos.confirmar.cerrarSesion))) return;
+  hayCambiosSinGuardar.value = false;
+  await salir();
+}
 
 // El salto no usa el hash: en modo hash el router lo tomaría como una ruta.
 function saltarAlContenido() {
@@ -82,7 +91,7 @@ function saltarAlContenido() {
 
       <div class="usuario">
         <span class="correo"><span class="sr-only">{{ t.sesionDe }} </span>{{ estado.correo }}</span>
-        <button class="btn btn-borde" type="button" @click="salir">{{ t.cerrarSesion }}</button>
+        <button class="btn btn-borde" type="button" @click="cerrarSesion">{{ t.cerrarSesion }}</button>
       </div>
     </header>
 
@@ -115,7 +124,7 @@ function saltarAlContenido() {
 
       <div class="usuario-movil">
         <span class="correo">{{ estado.correo }}</span>
-        <button class="btn btn-borde" type="button" @click="salir">{{ t.cerrarSesion }}</button>
+        <button class="btn btn-borde" type="button" @click="cerrarSesion">{{ t.cerrarSesion }}</button>
       </div>
     </nav>
 
@@ -123,6 +132,8 @@ function saltarAlContenido() {
       <RouterView />
     </main>
   </div>
+
+  <Confirmacion />
 </template>
 
 <style scoped>
