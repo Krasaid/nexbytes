@@ -40,6 +40,8 @@ async function token(cambios: { sub?: string; aud?: string; iss?: string; exp?: 
 
 const entorno = (extra: Partial<Env> = {}): Env => ({
   BUCKET: env.BUCKET,
+  LIMITE_SUBIDAS: env.LIMITE_SUBIDAS,
+  SUBIDAS_POR_HORA: env.SUBIDAS_POR_HORA,
   FIREBASE_PROJECT_ID: PROYECTO,
   ALLOWED_ORIGINS: env.ALLOWED_ORIGINS, // el mismo valor de wrangler.jsonc
   ADMIN_UID: ADMIN,
@@ -305,6 +307,55 @@ describe('CORS y rutas', () => {
     expect((await pedir({ method: 'POST' })).status).toBe(401);
     expect((await pedir({ method: 'GET', origen: ORIGEN })).status).toBe(405);
     expect((await pedir({ method: 'POST', origen: ORIGEN, ruta: '/otra' })).status).toBe(404);
+  });
+});
+
+describe('límite y errores', () => {
+  /** Sube con otra cuenta admin y otro límite (cada cuenta tiene su propio contador). */
+  async function subirComo(uid: string, maximo: string) {
+    const formulario = new FormData();
+    formulario.set('archivo', new File([WEBP], 'a.webp', { type: 'image/webp' }));
+    formulario.set('prefijo', 'general');
+    const serializado = new Response(formulario);
+    const tipo = serializado.headers.get('Content-Type')!;
+    const cuerpo = await serializado.arrayBuffer();
+    return createHandler({ llaves })(
+      new Request('https://api.test/upload', {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${await token({ sub: uid })}`, 'Content-Type': tipo, 'Content-Length': String(cuerpo.byteLength) },
+        body: cuerpo,
+      }),
+      entorno({ ADMIN_UID: uid, SUBIDAS_POR_HORA: maximo }),
+    );
+  }
+
+  it('el límite por cuenta corta con 429 y Retry-After; otra cuenta tiene su propio contador', async () => {
+    for (let i = 0; i < 3; i++) expect((await subirComo('uid-limite-a', '3')).status).toBe(201);
+    const cortada = await subirComo('uid-limite-a', '3');
+    expect(cortada.status).toBe(429);
+    const segundos = Number(cortada.headers.get('Retry-After'));
+    expect(segundos).toBeGreaterThan(3500);
+    expect(segundos).toBeLessThanOrEqual(3600);
+    expect(((await cortada.json()) as { error: string }).error).toMatch(/Demasiadas subidas.*60 min/);
+
+    expect((await subirComo('uid-limite-b', '3')).status).toBe(201);
+  });
+
+  it('un fallo inesperado responde 500 genérico, sin el mensaje ni la traza', async () => {
+    const roto = { ...entorno(), BUCKET: undefined } as unknown as Env; // binding ausente: TypeError adentro
+    const respuesta = await createHandler({ llaves })(
+      new Request('https://api.test/upload', {
+        method: 'DELETE',
+        headers: { Origin: ORIGEN, Authorization: `Bearer ${await token()}`, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ path: 'general/imagen-0123456789.webp' }),
+      }),
+      roto,
+    );
+    expect(respuesta.status).toBe(500);
+    expect(respuesta.headers.get('Access-Control-Allow-Origin')).toBe(ORIGEN); // el navegador puede leer el error
+    const texto = await respuesta.text();
+    expect(JSON.parse(texto)).toEqual({ error: 'Error interno. Intenta de nuevo.' });
+    expect(texto).not.toMatch(/TypeError|undefined|at |\.ts/);
   });
 });
 

@@ -151,7 +151,7 @@ Landing ─────────┘ HTML estático (sin cambios para el visit
 - **Lista de espera:** lista, cambio de estado (nuevo/invitado/baja) y exportar a CSV.
 - Paginación con cursores de Firestore (20 por página).
 
-### [ ] T24. Cierre: seguridad, pruebas y documentación
+### [x] T24. Cierre: seguridad, pruebas y documentación
 - Revisar las reglas completas con pruebas de emulador para cada colección y rol.
 - Prueba de punta a punta: editar un texto → vista previa → publicar → el cambio aparece en producción.
 - Accesibilidad del admin: recorrido completo con teclado y foco visible.

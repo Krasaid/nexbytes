@@ -8,8 +8,12 @@
   "compatibility_date": "2026-08-01",
   "observability": { "enabled": true },
   "r2_buckets": [{ "binding": "BUCKET", "bucket_name": "nexbytes" }],
+  // Límite de subidas por UID (src/limite.ts). SQLite: disponible en el plan gratuito.
+  "durable_objects": { "bindings": [{ "name": "LIMITE_SUBIDAS", "class_name": "LimiteSubidas" }] },
+  "migrations": [{ "tag": "v1", "new_sqlite_classes": ["LimiteSubidas"] }],
   "vars": {
     "FIREBASE_PROJECT_ID": "nexbytes",
+    "SUBIDAS_POR_HORA": "60",
     // Separados por coma; * vale por un tramo de letras, números y guiones: el puerto en
     // desarrollo (localhost y 127.0.0.1, solo existen en la propia máquina) y los canales de preview.
     "ALLOWED_ORIGINS": "http://localhost:*,http://127.0.0.1:*,https://nexbytes1.web.app,https://nexbytes1.firebaseapp.com,https://nexbytes1--*.web.app"

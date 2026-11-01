@@ -400,6 +400,55 @@ describe('publicaciones', () => {
   });
 });
 
+describe('matriz: quién lee, lista y borra en cada colección', () => {
+  // Documentos sembrados saltándose las reglas: lo que importa es el permiso, no el contenido.
+  const colecciones = {
+    cotizaciones: { ...cotizacion(), creadoEn: new Date() },
+    lista_espera: { ...registro(), creadoEn: new Date() },
+    borradores: bloque(1),
+    publicado: bloque(1),
+    publicaciones: { estado: 'publicada', tipo: 'produccion', solicitadaEn: new Date() },
+    configuracion: { secreto: 'no' }, // cualquier colección no declarada
+  } as const;
+  const sinAcceso = ['configuracion'];
+  const id = (nombre: string) => (nombre === 'borradores' || nombre === 'publicado' ? 'hero' : 'x');
+
+  beforeEach(async () => {
+    for (const [nombre, datos] of Object.entries(colecciones)) await sembrar(nombre, id(nombre), datos);
+  });
+
+  for (const nombre of Object.keys(colecciones)) {
+    it(`${nombre}: el público y otra cuenta no leen, no listan y no borran`, async () => {
+      for (const db of [publico(), otroUsuario()]) {
+        await assertFails(getDoc(doc(db, nombre, id(nombre))));
+        await assertFails(getDocs(collection(db, nombre)));
+        await assertFails(deleteDoc(doc(db, nombre, id(nombre))));
+      }
+    });
+
+    it(`${nombre}: el admin ${sinAcceso.includes(nombre) ? 'tampoco lee' : 'lee y lista'}, y nadie borra`, async () => {
+      if (sinAcceso.includes(nombre)) {
+        await assertFails(getDoc(doc(admin(), nombre, id(nombre))));
+        await assertFails(getDocs(collection(admin(), nombre)));
+      } else {
+        await assertSucceeds(getDoc(doc(admin(), nombre, id(nombre))));
+        await assertSucceeds(getDocs(collection(admin(), nombre)));
+      }
+      await assertFails(deleteDoc(doc(admin(), nombre, id(nombre))));
+    });
+  }
+
+  it('otra cuenta con sesión no puede editar la lista de espera ni crear borradores o solicitudes', async () => {
+    await assertFails(updateDoc(doc(otroUsuario(), 'lista_espera', 'x'), { estado: 'invitado' }));
+    await assertFails(
+      setDoc(doc(otroUsuario(), 'borradores', 'proceso'), { pasos: [], version: 1, actualizadoEn: serverTimestamp() }),
+    );
+    await assertFails(
+      addDoc(collection(otroUsuario(), 'publicaciones'), { estado: 'solicitada', tipo: 'preview', solicitadaEn: serverTimestamp() }),
+    );
+  });
+});
+
 describe('otras colecciones', () => {
   it('están cerradas para todos', async () => {
     await assertFails(setDoc(doc(publico(), 'contenido', 'site'), { a: 1 }));

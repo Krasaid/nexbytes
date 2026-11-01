@@ -15,7 +15,7 @@ export async function verificarToken(
   projectId: string,
   adminUid: string,
   llaves: JWTVerifyGetKey = llavesDeGoogle,
-): Promise<void> {
+): Promise<string> {
   if (!projectId || !adminUid) throw new Error('Falta la configuración de autenticación');
   const { payload } = await jwtVerify(token, llaves, {
     issuer: `https://securetoken.google.com/${projectId}`,
@@ -34,4 +34,5 @@ export async function verificarToken(
   ) {
     throw new Error('Cuenta no autorizada');
   }
+  return payload.sub;
 }

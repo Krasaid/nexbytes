@@ -67,7 +67,16 @@ Cada campo de imagen del panel (imagen para compartir, capturas de proyectos, fo
   - URLs limpias: `/404` en vez de `/404.html`, sin barra final.
   - Caché: el HTML no se guarda (`no-cache`, siempre se revalida). `/_astro/**` (JS, CSS y fuentes con hash en el nombre) se guarda un año como `immutable`. Íconos e imágenes de `public/`, un día.
   - Headers de seguridad: `X-Content-Type-Options`, `Referrer-Policy`, `Permissions-Policy`, `X-Frame-Options` y `frame-ancestors 'none'`.
-- **Reglas de Firestore**: se publican aparte con `npm run deploy:rules`. El público solo puede crear en `cotizaciones` y `lista_espera`; ahí el admin solo puede leer y cambiar `estado` y `notas`. El contenido del CMS (`borradores`, `publicado`) y `publicaciones` son solo del admin.
+- **Reglas de Firestore**: se publican aparte con `npm run deploy:rules`. El público solo puede crear en `cotizaciones` y `lista_espera`; ahí el admin solo puede leer y cambiar `estado` y `notas`. El contenido del CMS (`borradores`, `publicado`) y `publicaciones` son solo del admin. Desde el navegador nadie borra nada.
+
+  | Colección | Público | Admin | Cuenta de servicio (build, seed, Actions) |
+  | --- | --- | --- | --- |
+  | `cotizaciones` | crear (campos y largos validados, `estado: nuevo`) | leer, listar; cambiar solo `estado` y `notas` | todo (se salta las reglas) |
+  | `lista_espera` | crear (correo validado, `estado: nuevo`) | leer, listar; cambiar solo `estado` y `notas` | todo |
+  | `borradores` | nada | leer, listar; crear con `version: 1`; actualizar con `version + 1` (solo los 8 bloques conocidos; el contenido lo valida zod en el panel y en el build) | todo (seed, build de vista previa) |
+  | `publicado` | nada | leer, listar; crear o actualizar solo como copia exacta del borrador | todo (seed, build de producción) |
+  | `publicaciones` | nada | leer, listar; crear como `solicitada`; pasar de `solicitada` a `error` | todo (el workflow la mueve a `construyendo` → `publicada`/`error`) |
+  | cualquier otra | nada | nada | todo |
 - **App Check (reCAPTCHA v3)**: no actives el *enforcement* de Firestore hasta ver en la consola (App Check → Firestore) que las solicitudes llegan verificadas. Para desarrollo local, registra el token de depuración que imprime la consola del navegador con `npm run dev` (App Check → Apps → Administrar tokens de depuración).
 
 ### Publicar contenido (mientras GitHub Actions está pausado)
@@ -182,6 +191,8 @@ Si agregas un script `is:inline`, su hash no se calcula solo. Agrégalo con `Ast
 | `POST /publish` | JSON `{ publicacionId, tipo }` → `repository_dispatch` "publicar" en GitHub. Sin `GITHUB_TOKEN` responde `503 { error: "Publicación automática no configurada" }`. |
 
 CORS: `http://localhost` y `http://127.0.0.1` en cualquier puerto (desarrollo), `https://nexbytes1.web.app`, `https://nexbytes1.firebaseapp.com` y los canales de preview `https://nexbytes1--*.web.app` (`ALLOWED_ORIGINS` en `wrangler.jsonc`). Otro origen recibe `403`, y el navegador lo muestra como un fallo de red.
+
+Límite y errores: `POST /upload` acepta hasta `SUBIDAS_POR_HORA` (60) subidas por cuenta en una ventana de una hora, contadas en el Durable Object `LimiteSubidas`. Pasado el límite responde `429` con `Retry-After`. Un error inesperado responde `500 { error: "Error interno. Intenta de nuevo." }` sin detalles; el detalle se ve con `npx wrangler tail`.
 
 ### Pruebas y desarrollo local
 

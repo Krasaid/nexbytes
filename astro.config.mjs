@@ -16,6 +16,22 @@ export default defineConfig({
   site: 'https://nexbytes1.web.app',
   output: 'static',
   integrations: [vue(), sitemap({ filter: (page) => !page.includes('/404') && !page.includes('/admin') })],
+  // Un solo CSS base: fuentes, tokens, global.css y los estilos de Base, Nav, Footer y los
+  // componentes de ui/. Sin esto, desde que existe /admin Vite lo partía en dos (lo compartido
+  // con el admin y lo compartido entre la portada y la 404) y la portada cargaba 3 hojas.
+  // Así carga 2 (base + la suya); el admin recibe ~5 KB de estilos de la landing que no usa.
+  vite: {
+    build: {
+      rollupOptions: {
+        output: {
+          manualChunks(id) {
+            const base = /@fontsource|src[\\/]styles[\\/]|src[\\/]layouts[\\/]Base\.astro|src[\\/]components[\\/](ui[\\/]|sections[\\/](Nav|Footer)\.astro)/;
+            if (base.test(id) && /\.css|type=style/.test(id)) return 'base';
+          },
+        },
+      },
+    },
+  },
 
   // CSP en un <meta> de cada página, con los hashes exactos de los scripts y
   // estilos inline que genera el build (sin 'unsafe-inline').
