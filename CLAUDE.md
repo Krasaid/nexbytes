@@ -121,6 +121,7 @@ landing: HTML estático; el público solo crea en cotizaciones y lista_espera
 - **Bandeja (`vistas/Cotizaciones.vue`, `Cotizacion.vue`, `ListaEspera.vue`):** filtros y búsqueda en la URL (`?estado=…&q=…`), paginación con cursores de 20 (`paginacion.ts`). La búsqueda es por `ref` exacto o por cómo empieza el nombre con mayúscula inicial (Firestore no busca texto contenido ni ignora tildes). Los filtros por estado necesitan los índices compuestos de `firestore.indexes.json` (`firebase deploy --only firestore:indexes`; `deploy:rules` no los despliega). Contador de nuevas en vivo (`nuevas.ts`). Las reglas solo dejan al admin cambiar `estado` y `notas`. CSV de la lista de espera con BOM UTF-8 y celdas protegidas contra fórmulas.
 - **Worker `workers/nexbytes-api`:** `POST/DELETE /upload` (R2, binding `BUCKET`) y `POST /publish` (GitHub `repository_dispatch`); todo exige el ID token de la cuenta admin (`src/auth.ts`, `jose`). El tipo de imagen se decide por los primeros bytes (`src/imagenes.ts`), nunca por el `Content-Type`. `createHandler({ llaves, fetch })` recibe las dependencias para las pruebas. Sin `GITHUB_TOKEN`, `/publish` responde 503. `POST /upload` tiene un límite por UID (`SUBIDAS_POR_HORA`, 60) con el Durable Object `LimiteSubidas` (`src/limite.ts`, ventana fija de una hora): pasado el límite, 429 con `Retry-After`. Un error inesperado responde 500 con un mensaje genérico (sin mensaje ni traza; el detalle queda en `wrangler tail`). Una clase de Durable Object nueva necesita su entrada en `migrations` de `wrangler.jsonc`. Está excluido del `tsconfig` de la raíz.
 - **CSS en dos hojas:** `vite.build.rollupOptions.output.manualChunks` en `astro.config.mjs` junta en un chunk `base` las fuentes, `src/styles/`, `Base.astro`, `ui/`, `Nav` y `Footer`. Sin eso, desde que existe `/admin`, la portada cargaba 3 hojas. Si agregas una sección compartida por la portada y la 404, súmala a esa expresión.
+- **Variables `PUBLIC_*`:** lista única de obligatorias en `scripts/lib/variables-publicas.mjs`. Una integración de `astro.config.mjs` hace fallar `astro build` (local, `deploy:cms`, CI) si falta una o una URL no es válida; `dev`/`check` no se frenan. En CI, `scripts/variables-ci.mjs` recibe `toJSON(vars)` y pasa al job todas las `PUBLIC_*` del repositorio (salvo las de emuladores), así que `deploy.yml` no las lista. `tests/unit/variables-publicas.test.ts` falla si `src/` usa una `PUBLIC_*` que no está en la lista.
 - **URL del sitio:** `site` en `astro.config.mjs` define canonical, Open Graph, sitemap y `robots.txt`.
 
 ## Comandos
@@ -151,6 +152,8 @@ PUBLIC_FIREBASE_AUTH_DOMAIN=
 PUBLIC_FIREBASE_PROJECT_ID=
 PUBLIC_FIREBASE_APP_ID=
 PUBLIC_RECAPTCHA_SITE_KEY=
+# URL del Worker (la escribe scripts/configure-worker.mjs):
+PUBLIC_API_URL=
 # Opcional, solo desarrollo: PUBLIC_FIRESTORE_EMULATOR=127.0.0.1:8080 y PUBLIC_AUTH_EMULATOR=127.0.0.1:9099
 # Solo para npm run seed y el build desde Firestore (ruta fuera del repo): GOOGLE_APPLICATION_CREDENTIALS=
 # Solo build: CONTENT_SOURCE=local | firestore | firestore-borradores (por defecto local)

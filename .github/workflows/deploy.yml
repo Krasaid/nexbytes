@@ -106,28 +106,16 @@ jobs:
       - name: Revisar configuración
         id: config
         env:
-          PUBLIC_CDN_URL: ${{ vars.PUBLIC_CDN_URL }}
-          PUBLIC_FIREBASE_API_KEY: ${{ vars.PUBLIC_FIREBASE_API_KEY }}
-          PUBLIC_FIREBASE_AUTH_DOMAIN: ${{ vars.PUBLIC_FIREBASE_AUTH_DOMAIN }}
-          PUBLIC_FIREBASE_PROJECT_ID: ${{ vars.PUBLIC_FIREBASE_PROJECT_ID }}
-          PUBLIC_FIREBASE_APP_ID: ${{ vars.PUBLIC_FIREBASE_APP_ID }}
-          PUBLIC_RECAPTCHA_SITE_KEY: ${{ vars.PUBLIC_RECAPTCHA_SITE_KEY }}
+          # Todas las variables del repositorio. El script pasa las PUBLIC_* al resto del job
+          # (sin listarlas aquí) y revisa las obligatorias de scripts/lib/variables-publicas.mjs.
+          VARIABLES: ${{ toJSON(vars) }}
         run: |
           case "$TIPO" in
             produccion) echo "CONTENT_SOURCE=firestore" >> "$GITHUB_ENV" ;;
             preview) echo "CONTENT_SOURCE=firestore-borradores" >> "$GITHUB_ENV" ;;
             *) echo "::error::tipo debe ser produccion o preview."; exit 1 ;;
           esac
-
-          faltan=""
-          for v in PUBLIC_CDN_URL PUBLIC_FIREBASE_API_KEY PUBLIC_FIREBASE_AUTH_DOMAIN \
-                   PUBLIC_FIREBASE_PROJECT_ID PUBLIC_FIREBASE_APP_ID PUBLIC_RECAPTCHA_SITE_KEY; do
-            if [ -z "${!v}" ]; then faltan="$faltan $v"; fi
-          done
-          if [ -n "$faltan" ]; then
-            echo "::error::Faltan variables del repositorio:$faltan (ver README)."
-            exit 1
-          fi
+          node scripts/variables-ci.mjs
 
       - name: Marcar construyendo
         if: env.ID_OK == 'true'
@@ -143,13 +131,8 @@ jobs:
 
       - name: Build
         id: build
-        env:
-          PUBLIC_CDN_URL: ${{ vars.PUBLIC_CDN_URL }}
-          PUBLIC_FIREBASE_API_KEY: ${{ vars.PUBLIC_FIREBASE_API_KEY }}
-          PUBLIC_FIREBASE_AUTH_DOMAIN: ${{ vars.PUBLIC_FIREBASE_AUTH_DOMAIN }}
-          PUBLIC_FIREBASE_PROJECT_ID: ${{ vars.PUBLIC_FIREBASE_PROJECT_ID }}
-          PUBLIC_FIREBASE_APP_ID: ${{ vars.PUBLIC_FIREBASE_APP_ID }}
-          PUBLIC_RECAPTCHA_SITE_KEY: ${{ vars.PUBLIC_RECAPTCHA_SITE_KEY }}
+        # Las PUBLIC_* ya están en el entorno (paso "Revisar configuración"); astro.config.mjs
+        # vuelve a revisarlas y el build falla si falta alguna.
         # El log se guarda para resumir el motivo si falla (bloque inválido, bloques que faltan…).
         run: npm run build 2>&1 | tee "$RUNNER_TEMP/build.log"
 

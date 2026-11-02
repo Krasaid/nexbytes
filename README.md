@@ -19,9 +19,12 @@ Variables de `.env` (ver `.env.example`):
 | `PUBLIC_CDN_URL` | Origen de las imágenes en R2. La CSP lo permite automáticamente. |
 | `PUBLIC_FIREBASE_*` | Configuración web de Firebase (proyecto `nexbytes`). |
 | `PUBLIC_RECAPTCHA_SITE_KEY` | Clave de sitio de reCAPTCHA v3 para App Check. |
+| `PUBLIC_API_URL` | URL del Worker `workers/nexbytes-api` (subir imágenes y publicar desde el admin). La escribe `scripts/configure-worker.mjs`. |
 | `PUBLIC_FIRESTORE_EMULATOR` | Opcional, solo en desarrollo: `127.0.0.1:8080` para usar el emulador. |
 | `GOOGLE_APPLICATION_CREDENTIALS` | Para `npm run seed` y el build desde Firestore: ruta al JSON de la cuenta de servicio. Guárdalo **fuera del repo**. |
 | `CONTENT_SOURCE` | De dónde sale el contenido del build: `local` (JSON de `src/content/data/`, por defecto), `firestore` (lo publicado) o `firestore-borradores` (vistas previas). |
+
+Las `PUBLIC_*` obligatorias están en una sola lista, `scripts/lib/variables-publicas.mjs`. Si falta una (o una URL no es válida), `astro build` falla con su nombre: en local, en `npm run deploy:cms` y en GitHub Actions. Una variable nueva se agrega a esa lista (y a `.env.example`, `src/env.d.ts` y `gh variable set`); una prueba unitaria avisa si `src/` usa una `PUBLIC_*` que no está ahí.
 
 ## Comandos
 
@@ -128,7 +131,7 @@ La cuenta necesita leer y escribir Firestore y desplegar en Hosting. Si el paso 
 
 #### Variables: `PUBLIC_*`
 
-Son las mismas de `.env` y no son secretas (terminan dentro del JavaScript del sitio), así que van como **variables** del repositorio, no como secretos:
+Son las mismas de `.env` y no son secretas (terminan dentro del JavaScript del sitio), así que van como **variables** del repositorio, no como secretos. El workflow pasa al build **todas** las `PUBLIC_*` del repositorio (no hay que tocar `deploy.yml` al agregar una) y se detiene antes de instalar nada si falta una obligatoria (`scripts/variables-ci.mjs`):
 
 | Variable | De dónde sale |
 | --- | --- |
@@ -138,6 +141,7 @@ Son las mismas de `.env` y no son secretas (terminan dentro del JavaScript del s
 | `PUBLIC_FIREBASE_PROJECT_ID` | Mismo lugar → `projectId` (`nexbytes`). |
 | `PUBLIC_FIREBASE_APP_ID` | Mismo lugar → `appId`. |
 | `PUBLIC_RECAPTCHA_SITE_KEY` | Consola de Firebase → App Check → Apps → app web → reCAPTCHA v3 (o [admin de reCAPTCHA](https://www.google.com/recaptcha/admin)) → clave de sitio. |
+| `PUBLIC_API_URL` | La URL que imprime `npx wrangler deploy` en `workers/nexbytes-api` (`https://nexbytes-api.<subdominio>.workers.dev`). |
 
 Una por una, desde PowerShell:
 
@@ -147,10 +151,10 @@ gh variable set PUBLIC_FIREBASE_API_KEY --body "<apiKey>"
 # … igual con las demás
 ```
 
-O todas a la vez desde tu `.env` (toma solo las `PUBLIC_*` con valor y omite la del emulador):
+O todas a la vez desde tu `.env` (toma solo las `PUBLIC_*` con valor y omite las de los emuladores):
 
 ```powershell
-Get-Content .env | Where-Object { $_ -match '^PUBLIC_[A-Z_]+=.+' -and $_ -notmatch '^PUBLIC_FIRESTORE_EMULATOR' } | ForEach-Object { $k, $v = $_ -split '=', 2; gh variable set $k --body $v }
+Get-Content .env | Where-Object { $_ -match '^PUBLIC_[A-Z_]+=.+' -and $_ -notmatch '^PUBLIC_[A-Z_]*EMULATOR' } | ForEach-Object { $k, $v = $_ -split '=', 2; gh variable set $k --body $v }
 gh variable list
 ```
 

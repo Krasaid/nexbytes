@@ -5,9 +5,29 @@ import { loadEnv } from 'vite';
 import vue from '@astrojs/vue';
 import sitemap from '@astrojs/sitemap';
 
-const { PUBLIC_CDN_URL } = loadEnv(process.env.NODE_ENV ?? 'production', process.cwd(), '');
+import { mensajeVariables, revisarVariables } from './scripts/lib/variables-publicas.mjs';
+
+// .env más las variables del sistema (estas ganan), igual que las ve el build.
+const env = loadEnv(process.env.NODE_ENV ?? 'production', process.cwd(), '');
 // Origen de las imágenes (R2). Si cambia PUBLIC_CDN_URL (p. ej. a cdn.nexbytes.com), la CSP lo sigue.
-const cdnOrigin = PUBLIC_CDN_URL ? new URL(PUBLIC_CDN_URL).origin : '';
+const cdnOrigin = URL.canParse(env.PUBLIC_CDN_URL ?? '') ? new URL(env.PUBLIC_CDN_URL).origin : '';
+
+/**
+ * `astro build` (npm run build, deploy:cms, CI) falla si falta una PUBLIC_* obligatoria
+ * (lista única en scripts/lib/variables-publicas.mjs), en vez de publicar un admin roto.
+ * `astro dev`, `astro check` y `astro preview` no se frenan.
+ * @type {import('astro').AstroIntegration}
+ */
+const revisarEntorno = {
+  name: 'nexbytes:variables-publicas',
+  hooks: {
+    'astro:config:setup': ({ command }) => {
+      if (command !== 'build') return;
+      const problemas = revisarVariables(env);
+      if (problemas.length) throw new Error(mensajeVariables(problemas));
+    },
+  },
+};
 
 // https://astro.build/config
 export default defineConfig({
@@ -15,7 +35,7 @@ export default defineConfig({
   // Cámbiala cuando el dominio propio esté conectado.
   site: 'https://nexbytes1.web.app',
   output: 'static',
-  integrations: [vue(), sitemap({ filter: (page) => !page.includes('/404') && !page.includes('/admin') })],
+  integrations: [revisarEntorno, vue(), sitemap({ filter: (page) => !page.includes('/404') && !page.includes('/admin') })],
   // Un solo CSS base: fuentes, tokens, global.css y los estilos de Base, Nav, Footer y los
   // componentes de ui/. Sin esto, desde que existe /admin Vite lo partía en dos (lo compartido
   // con el admin y lo compartido entre la portada y la 404) y la portada cargaba 3 hojas.
