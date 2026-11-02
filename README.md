@@ -37,7 +37,7 @@ Variables de `.env` (ver `.env.example`):
 | `npm run emulators` | Emulador de Firestore para probar formularios en local |
 | `npm run deploy:preview` | Pruebas + build + canal de vista previa `preview` (vence en 7 días) |
 | `npm run deploy` | Pruebas + build + publicar en producción |
-| `npm run deploy:cms` | Pruebas + build **desde Firestore** (`publicado`) + publicar en producción. Es el "Publicar" manual mientras GitHub Actions no corre |
+| `npm run deploy:cms` | Pruebas + build **desde Firestore** (`publicado`) + publicar en producción. Es el plan B del botón "Publicar" si GitHub Actions falla |
 | `npm run deploy:cms:preview` | Igual, pero desde `borradores` y al canal `preview` (vence en 7 días) |
 | `npm run deploy:rules` | Publicar `firestore.rules` |
 
@@ -79,18 +79,22 @@ Cada campo de imagen del panel (imagen para compartir, capturas de proyectos, fo
   | cualquier otra | nada | nada | todo |
 - **App Check (reCAPTCHA v3)**: no actives el *enforcement* de Firestore hasta ver en la consola (App Check → Firestore) que las solicitudes llegan verificadas. Para desarrollo local, registra el token de depuración que imprime la consola del navegador con `npm run dev` (App Check → Apps → Administrar tokens de depuración).
 
-### Publicar contenido (mientras GitHub Actions está pausado)
+### Publicar contenido
 
-GitHub Actions no arranca por un bloqueo de facturación de la cuenta, así que el workflow está desactivado y el sitio se construye desde la terminal, con la cuenta de servicio de `GOOGLE_APPLICATION_CREDENTIALS` en `.env`. El flujo:
+El flujo normal se hace todo desde el panel (`/admin`): **Guardar** (borradores) → **Vista previa** (canal `preview`) → **Publicar** (producción). Los dos botones llaman a `/publish` del Worker y este dispara el workflow (ver "Despliegue automático" más abajo).
 
-1. **Guardar** en el panel (`/admin`): los cambios quedan en los borradores.
+#### Plan B: publicar a mano si GitHub falla
+
+Si GitHub Actions no corre (caída, facturación, token del Worker vencido), el panel marca la publicación como "Con error" y muestra el comando que hay que correr. El sitio se construye desde la terminal, con la cuenta de servicio de `GOOGLE_APPLICATION_CREDENTIALS` en `.env`:
+
+1. **Guardar** en el panel: los cambios quedan en los borradores.
 2. **Revisar** con una vista previa construida desde los borradores:
 
    ```powershell
    npm run deploy:cms:preview   # canal "preview" (7 días); la URL sale al final
    ```
 
-3. **Publicar** en el panel (página Publicar → botón Publicar): copia los borradores con cambios a lo publicado. Como no hay publicación automática, el panel avisa "Publicación automática no configurada"; es lo esperado.
+3. **Publicar** en el panel (página Publicar → botón Publicar): copia los borradores con cambios a lo publicado, aunque el despliegue automático falle.
 4. **Desplegar** lo publicado:
 
    ```powershell
@@ -98,8 +102,6 @@ GitHub Actions no arranca por un bloqueo de facturación de la cuenta, así que 
    ```
 
 Ojo: `npm run deploy` (sin `:cms`) construye con los JSON locales, no con Firestore: pisaría en producción lo editado en el panel.
-
-Cuando se resuelva la facturación: `gh workflow enable deploy.yml`. Desde entonces, los botones Vista previa y Publicar del panel disparan el despliegue solos y los pasos 2 y 4 dejan de hacer falta.
 
 ### Despliegue automático (GitHub Actions)
 
@@ -206,7 +208,7 @@ Para `wrangler dev`, crea `workers/nexbytes-api/.dev.vars` (está en `.gitignore
 
 ```
 ADMIN_UID=kcUUn8dbtDdrv50iXDHkcupN8t73
-GITHUB_REPO=Krasaid/nexbytes
+GITHUB_REPO=nexbytes/nexbytes
 ```
 
 `npm run dev` levanta el Worker en `http://localhost:8787` con un R2 **local** (no el bucket real).
@@ -221,7 +223,7 @@ npm install
 npx wrangler whoami                     # confirma la cuenta de Cloudflare
 npx wrangler deploy                     # crea el Worker "nexbytes-api" y muestra su URL
 "kcUUn8dbtDdrv50iXDHkcupN8t73" | npx wrangler secret put ADMIN_UID
-"Krasaid/nexbytes" | npx wrangler secret put GITHUB_REPO
+"nexbytes/nexbytes" | npx wrangler secret put GITHUB_REPO
 npx wrangler secret list                # deben aparecer ADMIN_UID y GITHUB_REPO
 cd ../..
 node scripts/configure-worker.mjs https://nexbytes-api.<tu-subdominio>.workers.dev
@@ -231,17 +233,25 @@ node scripts/configure-worker.mjs https://nexbytes-api.<tu-subdominio>.workers.d
 - Entre el `deploy` y los secretos, el Worker rechaza todo con 401 (sin `ADMIN_UID` no acepta a nadie). Cada `secret put` publica una nueva versión al momento.
 - Comprobación rápida: `curl.exe -s -X POST https://nexbytes-api.<tu-subdominio>.workers.dev/upload` debe responder `{"error":"Debes iniciar sesión."}`. Los registros en vivo: `npx wrangler tail` (dentro de `workers/nexbytes-api`).
 
-### Cuando GitHub Actions vuelva a funcionar
+### Token de GitHub (`GITHUB_TOKEN`)
 
-1. En GitHub → Settings → Developer settings → **Fine-grained tokens** → Generate new token: solo el repositorio `Krasaid/nexbytes`, permiso **Contents: Read and write** (lo exige `repository_dispatch`) y una fecha de vencimiento.
-2. Cárgalo (pega el token cuando lo pida; no queda en el historial de PowerShell):
+`/publish` usa un token fine-grained para disparar el workflow. Vence en un año (ver la fecha en `docs/PENDIENTES.md`). Cuando vence, los botones Vista previa y Publicar fallan y el panel muestra el plan B manual.
+
+Para crearlo o renovarlo:
+
+1. En GitHub → Settings → Developer settings → **Fine-grained tokens**: abre el token actual y pulsa **Regenerate token**, o crea uno nuevo con **Generate new token**. Si es nuevo, elige:
+   - **Resource owner:** `nexbytes`;
+   - **Repositorio:** solo `nexbytes/nexbytes`;
+   - **Permiso:** **Contents: Read and write** (lo exige `repository_dispatch`);
+   - **Vencimiento:** un año.
+2. Cárgalo en el Worker (pega el token cuando lo pida; no queda en el historial de PowerShell):
 
    ```powershell
    cd workers/nexbytes-api
    npx wrangler secret put GITHUB_TOKEN
    ```
 
-3. Reactiva el workflow: `gh workflow enable deploy.yml`.
+3. Pruébalo con el botón **Vista previa** del panel y anota la nueva fecha de vencimiento en `docs/PENDIENTES.md`.
 
 ## Imágenes en Cloudflare R2
 

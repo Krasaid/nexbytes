@@ -59,31 +59,33 @@ Si subes muchas imágenes seguidas (más de 60 en una hora), el servidor te pide
 
 La vista previa es una copia del sitio con tus **borradores**, en un enlace temporal que dura 7 días. Sirve para revisar cómo se ve antes de que lo vea todo el mundo.
 
-**Mientras GitHub siga pausado** (ver `docs/PENDIENTES.md`), la vista previa se genera desde la terminal, en la carpeta del proyecto:
+1. Guarda los bloques que cambiaste.
+2. Entra a **Publicar** y pulsa **Vista previa**.
+3. Espera unos minutos. En el **Historial** la solicitud pasa de "Solicitada" a "Construyendo" y luego a "Publicada", con el botón **Abrir la vista previa**. La dirección tiene la forma `https://nexbytes1--preview-xxxx.web.app`.
+4. Ábrela y revisa con calma, también desde el teléfono.
 
-```powershell
-npm run deploy:cms:preview
-```
-
-Tarda uno o dos minutos. Al final aparece la dirección, con la forma `https://nexbytes1--preview-xxxx.web.app`. Ábrela y revisa con calma, también desde el teléfono.
-
-El botón **Vista previa** de la página Publicar solo deja la solicitud anotada y muestra "Para generar la vista previa, corre npm run deploy:cms:preview en la terminal". Cuando GitHub vuelva a funcionar, ese botón hará todo solo.
+Si quieres cambiar algo, edítalo, guarda y pide otra vista previa. La nueva reemplaza a la anterior.
 
 ## Publicar
 
 1. Entra a **Publicar**. Ahí ves qué bloques tienen "Cambios sin publicar". Si alguno tiene un error, el panel lo indica y no te deja publicar hasta corregirlo.
-2. Pulsa **Publicar** y confirma. Los borradores con cambios se copian a lo publicado.
-3. **Mientras GitHub siga pausado**, el panel muestra "Los cambios ya quedaron en lo publicado. Para actualizar el sitio, corre npm run deploy:cms en la terminal". Es lo esperado. En la terminal:
+2. Pulsa **Publicar** y confirma. Los borradores con cambios se copian a lo publicado y el sitio se reconstruye solo.
+3. En el **Historial** sigue el estado hasta que diga "Publicada" (unos minutos). Recarga el sitio para ver los cambios.
 
-   ```powershell
-   npm run deploy:cms
-   ```
+En el **Historial** ves cada publicación con su estado: Solicitada, Construyendo, Publicada o Con error. Una que queda "Solicitada" o "Construyendo" más de 30 minutos se marca como "Sin respuesta" y no bloquea los botones.
 
-   Cuando termine, el sitio ya muestra los cambios. Recarga la página para verlos.
+### Plan B: publicar desde la terminal si GitHub falla
+
+El sitio lo construye GitHub. Si GitHub no responde, o si venció el token del servidor (ver `docs/PENDIENTES.md`), la publicación queda "Con error" y el panel muestra el comando que hay que correr. En la terminal, en la carpeta del proyecto:
+
+```powershell
+npm run deploy:cms:preview   # vista previa con los borradores (la dirección sale al final)
+npm run deploy:cms           # sitio publicado, con lo que ya está en lo publicado
+```
+
+Al pulsar **Publicar**, el contenido ya se copió a lo publicado aunque falle el despliegue. Por eso alcanza con `npm run deploy:cms`. Tarda uno o dos minutos.
 
 **Importante:** usa siempre `npm run deploy:cms`. El comando `npm run deploy` (sin `:cms`) construye el sitio con los archivos JSON del proyecto, no con lo que editaste en el panel, y lo borraría del sitio publicado.
-
-En el **Historial** de Publicar ves cada publicación con su estado: Solicitada, Construyendo, Publicada o Con error. Una que queda "Solicitada" o "Construyendo" más de 30 minutos se marca como "Sin respuesta" y no bloquea los botones.
 
 ## Cotizaciones y lista de espera
 
@@ -142,6 +144,7 @@ Otros mensajes:
 
 ### Una publicación quedó "Con error"
 
+- **Si el error vino de GitHub**, el historial muestra un mensaje corto y un enlace a la ejecución, donde se ve el paso que falló (Pruebas, Build o Desplegar; abajo se explica cada uno). Si fue un problema pasajero, vuelve a pulsar el botón. Si sigue fallando, usa el plan B.
 - **Antes de cambiar nada, revisa si el contenido ya se copió.** Si en Publicar ya no aparecen "Cambios sin publicar", el contenido está bien y solo falta el despliegue: corre `npm run deploy:cms`.
 - Si el botón dijo "Un borrador cambió mientras se publicaba", vuelve a pulsar **Publicar**.
 - Si `npm run deploy:cms` falla en la terminal, el mensaje indica el paso que falló:

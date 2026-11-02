@@ -70,7 +70,7 @@ describe('mensajeLegible', () => {
 });
 
 describe('mensajeDeError', () => {
-  const enlace = 'https://github.com/Krasaid/nexbytes/actions/runs/123';
+  const enlace = 'https://github.com/nexbytes/nexbytes/actions/runs/123';
 
   it('une motivo, resumen y enlace', () => {
     expect(mensajeDeError('El build falló.', 'Faltan bloques: hero', enlace)).toBe(

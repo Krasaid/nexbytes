@@ -19,17 +19,18 @@ Lo que falta para dejar el sitio y el CMS completos, con quién lo hace y cómo.
   - **Restricciones de aplicaciones:** sitios web: `https://nexbytes1.web.app/*`, `https://nexbytes1.firebaseapp.com/*`, `https://nexbytes1--*.web.app/*`, `http://localhost/*` y `http://127.0.0.1/*` (más el dominio propio cuando exista).
   - **Restricciones de API:** solo Cloud Firestore API, Identity Toolkit API, Token Service API y Firebase App Check API.
   - Después prueba el panel (entrar, guardar, subir una imagen) y los formularios del sitio.
-- [ ] **Subir los commits locales** (13 o más sin push) cuando lo decidas: `git push`. Mientras Actions esté desactivado, el push no despliega nada.
+## Recurrente: token de GitHub del Worker
 
-## GitHub Actions (T16 sin verificar)
+- [ ] **Renovar `GITHUB_TOKEN` antes del 2 de noviembre de 2027.** El token fine-grained con el que el Worker dispara el workflow vence un año después de crearse (lo creaste el 2 de noviembre de 2026). Cuando vence, los botones Vista previa y Publicar del panel fallan, el panel marca la publicación "Con error" y hay que publicar a mano (`docs/CMS.md`, plan B). GitHub avisa por correo unos días antes. Para renovarlo:
+  1. GitHub → Settings → Developer settings → **Fine-grained tokens** → abre el token del repo `nexbytes/nexbytes` → **Regenerate token**, con un año de vencimiento. Si creas uno nuevo: resource owner `nexbytes`, solo ese repositorio, permiso **Contents: Read and write**.
+  2. Cárgalo en el Worker y pega el token cuando lo pida:
 
-El workflow `.github/workflows/deploy.yml` está escrito pero nunca corrió: Actions no arranca por un bloqueo de facturación de la cuenta de GitHub. Está desactivado y se publica a mano con `npm run deploy:cms` / `npm run deploy:cms:preview` (ver `docs/CMS.md`).
+     ```powershell
+     cd workers/nexbytes-api
+     npx wrangler secret put GITHUB_TOKEN
+     ```
 
-- [ ] Resolver la facturación en GitHub → Settings → Billing and plans.
-- [ ] Cargar los secretos y variables del README ("Despliegue automático") si no están: `FIREBASE_SERVICE_ACCOUNT` y las `PUBLIC_*`.
-- [ ] Crear el token fine-grained y cargarlo en el Worker: `npx wrangler secret put GITHUB_TOKEN` (README, "Cuando GitHub Actions vuelva a funcionar").
-- [ ] `gh workflow enable deploy.yml`.
-- [ ] Verificarlo con una vista previa de prueba (README, "Probar un despliegue a preview"), luego con el botón **Vista previa** del panel y por último con **Publicar**. Si todo responde, marca T16 como `[x]` en `docs/TAREAS-CMS.md`.
+  3. Prueba el botón **Vista previa** del panel y cambia aquí la fecha por la nueva.
 
 ## Dominio propio
 

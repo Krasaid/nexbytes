@@ -225,7 +225,7 @@ describe('POST /publish', () => {
 
   it('sin GITHUB_TOKEN: 503 "Publicación automática no configurada"', async () => {
     const fetchFalso = vi.fn<typeof fetch>();
-    const r = await publicar(solicitud, { GITHUB_REPO: 'Krasaid/nexbytes' }, fetchFalso);
+    const r = await publicar(solicitud, { GITHUB_REPO: 'nexbytes/nexbytes' }, fetchFalso);
     expect(r.status).toBe(503);
     expect(await r.json()).toEqual({ error: 'Publicación automática no configurada' });
     expect(fetchFalso).not.toHaveBeenCalled();
@@ -233,11 +233,11 @@ describe('POST /publish', () => {
 
   it('con token: llama a repository_dispatch con el payload', async () => {
     const fetchFalso = vi.fn<typeof fetch>().mockResolvedValue(new Response(null, { status: 204 }));
-    const r = await publicar(solicitud, { GITHUB_REPO: 'Krasaid/nexbytes', GITHUB_TOKEN: 'github_pat_prueba' }, fetchFalso);
+    const r = await publicar(solicitud, { GITHUB_REPO: 'nexbytes/nexbytes', GITHUB_TOKEN: 'github_pat_prueba' }, fetchFalso);
     expect(r.status).toBe(202);
 
     const [url, init] = fetchFalso.mock.calls[0];
-    expect(url).toBe('https://api.github.com/repos/Krasaid/nexbytes/dispatches');
+    expect(url).toBe('https://api.github.com/repos/nexbytes/nexbytes/dispatches');
     expect(init?.method).toBe('POST');
     const cabeceras = new Headers(init?.headers);
     expect(cabeceras.get('Authorization')).toBe('Bearer github_pat_prueba');
@@ -248,7 +248,7 @@ describe('POST /publish', () => {
 
   it('si GitHub rechaza: 502 con el estado', async () => {
     const fetchFalso = vi.fn<typeof fetch>().mockResolvedValue(new Response('{}', { status: 401 }));
-    const r = await publicar(solicitud, { GITHUB_REPO: 'Krasaid/nexbytes', GITHUB_TOKEN: 'vencido' }, fetchFalso);
+    const r = await publicar(solicitud, { GITHUB_REPO: 'nexbytes/nexbytes', GITHUB_TOKEN: 'vencido' }, fetchFalso);
     expect(r.status).toBe(502);
     expect(await r.json()).toEqual({ error: 'GitHub rechazó la publicación (HTTP 401).' });
   });
